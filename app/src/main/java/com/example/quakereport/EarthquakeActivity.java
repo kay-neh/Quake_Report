@@ -4,40 +4,41 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.quakereport.POJO.Earthquakes;
+import com.example.quakereport.Network.GetEarthquakes;
+import com.example.quakereport.Network.RetrofitClient;
+import com.example.quakereport.POJO.Features;
 import com.google.android.material.button.MaterialButton;
 
-import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class EarthquakeActivity extends AppCompatActivity {
     ListView earthquakeListView;
 
     TextView emptyTxt,emptyTxtDesc;
     ImageView emptyImg;
-    LinearLayout emptyState;
+    View emptyState;
     MaterialButton refresh;
 
     EarthquakeAdapter adapter;
     ProgressBar loading;
-    SwipeRefreshLayout swipe;
 
     SharedPreferences sharedPrefs;
     @Override
@@ -56,69 +57,23 @@ public class EarthquakeActivity extends AppCompatActivity {
         emptyTxt = findViewById(R.id.empty_txt);
         emptyTxtDesc = findViewById(R.id.empty_txt_desc);
         refresh = findViewById(R.id.refresh_button);
-
         loading = findViewById(R.id.progress_bar);
-        swipe = findViewById(R.id.swipe_down);
 
-        startBackgroundThread();
-        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                emptyState.setVisibility(View.GONE);
-                startBackgroundThread();
-            }
-        });
+        runBackgroundTask();
+
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 emptyState.setVisibility(View.GONE);
                 loading.setVisibility(View.VISIBLE);
-                startBackgroundThread();
+                runBackgroundTask();
             }
         });
+
     }
 
-
-    //menu items
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
-            startActivity(settingsIntent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }//menu item end
-
-
-    public void updateUI(ArrayList<Earthquakes> earthquakes) {
-
-        adapter = new EarthquakeAdapter(this, earthquakes);
-        earthquakeListView.setAdapter(adapter);
-        loading.setVisibility(View.GONE);
-        swipe.setRefreshing(false);
-        earthquakeListView.setEmptyView(emptyState);
-        earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-              /*adapter.clear();
-                emptyTxt.setText(R.string.no_quake);
-                emptyTxtDesc.setText(R.string.no_quake_desc);
-                emptyImg.setImageResource(R.drawable.no_event);
-                */
-            }
-        });
-    }
-
-    public void startBackgroundThread(){
-        final String USGS_API_BASE_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query";
-
+    //Helper method to make retrofit call to usgs server
+    public void runBackgroundTask(){
         String minMagnitude = sharedPrefs.getString(
                 getString(R.string.settings_min_magnitude_key),
                 getString(R.string.settings_min_magnitude_default));
@@ -131,79 +86,59 @@ public class EarthquakeActivity extends AppCompatActivity {
                 getString(R.string.settings_limit_key),
                 getString(R.string.settings_limit_default));
 
-        Uri baseUri = Uri.parse(USGS_API_BASE_URL);
-        Uri.Builder uriBuilder = baseUri.buildUpon();
+        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
+        Call<Earthquakes> call = service.getAllEarthquakes("geojson",limit,minMagnitude,orderBy);
 
-        uriBuilder.appendQueryParameter("format", "geojson");
-        uriBuilder.appendQueryParameter("limit", limit);
-        uriBuilder.appendQueryParameter("minmag", minMagnitude);
-        uriBuilder.appendQueryParameter("orderby", orderBy);
+        call.enqueue(new Callback<Earthquakes>() {
+            @Override
+            public void onResponse(Call<Earthquakes> call, Response<Earthquakes> response) {
+                if(response.body() != null)
+                    updateUI(response.body().getFeatures());
+            }
 
-        //checks for an active internet connection
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = null;
-        if (connMgr != null) { networkInfo = connMgr.getActiveNetworkInfo(); }
-
-        // Control flow for no internet connection
-        if (networkInfo != null && networkInfo.isConnected()) {
-            final EarthQuakeAsyncTask job = new EarthQuakeAsyncTask();
-            job.execute(uriBuilder.toString());
-        }else{
-            loading.setVisibility(View.GONE);
-            swipe.setRefreshing(false);
-            //test data
-            emptyTxt.setText(R.string.no_internet);
-            emptyTxtDesc.setText(R.string.no_internet_desc);
-            emptyImg.setImageResource(R.drawable.no_network);
-            earthquakeListView.setEmptyView(emptyState);
-        }
+            @Override
+            public void onFailure(Call<Earthquakes> call, Throwable t) {
+                loading.setVisibility(View.GONE);
+                earthquakeListView.setEmptyView(emptyState);
+                Toast.makeText(EarthquakeActivity.this,"unable to load users",Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
+    public void updateUI(List<Features> features) {
 
-    private class EarthQuakeAsyncTask extends AsyncTask<String,Void,ArrayList<Earthquakes>>{
-        @Override
-        protected ArrayList<Earthquakes> doInBackground(String... apiEndPoint) {
-           return QueryUtils.backgroundWork(apiEndPoint[0]);
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Earthquakes> earthquakes) {
-         if(earthquakes == null){
-             //removes the Progress bar when no data returns from the api
-             loading = findViewById(R.id.progress_bar);
-
-             loading.setVisibility(View.GONE);
-             //stops the Swipe-refreshing loading
-             swipe = findViewById(R.id.swipe_down);
-             swipe.setRefreshing(false);
-             //sets the Textview for the empty state
-             earthquakeListView = findViewById(R.id.list);
-             //empty state views
-             emptyState = findViewById(R.id.new_empty_test);
-             emptyImg = findViewById(R.id.empty_img);
-             emptyTxt = findViewById(R.id.empty_txt);
-             emptyTxtDesc = findViewById(R.id.empty_txt_desc);
-
-             emptyTxt.setText(R.string.no_quake);
-             emptyTxtDesc.setText(R.string.no_quake_desc);
-             emptyImg.setImageResource(R.drawable.no_event);
-
-             earthquakeListView.setEmptyView(emptyState);
-             return;
+        adapter = new EarthquakeAdapter(this, features);
+        earthquakeListView.setAdapter(adapter);
+        loading.setVisibility(View.GONE);
+        //earthquakeListView.setEmptyView(emptyState);
+        earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //handle click events
             }
-            updateUI(earthquakes);
-
-        }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        startBackgroundThread();
+        runBackgroundTask();
     }
 
-    public void darkMode(){
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

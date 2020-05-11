@@ -12,15 +12,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.example.quakereport.POJO.Features;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class EarthquakeAdapter extends ArrayAdapter<Earthquakes> {
+public class EarthquakeAdapter extends ArrayAdapter<Features> {
 
-    public EarthquakeAdapter(@NonNull Context context, @NonNull List <Earthquakes> objects) {
+    public EarthquakeAdapter(@NonNull Context context, @NonNull List<Features> objects) {
         super(context, 0, objects);
     }
 
@@ -32,7 +34,7 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquakes> {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.earthquake_listview,parent,false);
         }
         //Updating the UI
-        Earthquakes currentQuake = getItem(position);
+        Features currentQuake = getItem(position);
         TextView magnitude = listItemView.findViewById(R.id.magnitude);
         TextView locationOffset = listItemView.findViewById(R.id.location_offset);
         TextView primaryLocation = listItemView.findViewById(R.id.primary_location);
@@ -40,12 +42,12 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquakes> {
         TextView time = listItemView.findViewById(R.id.time);
 
         //Date and time
-        Date dateObject = new Date(currentQuake.getTime());
+        Date dateObject = new Date(currentQuake.getProperties().getTime());
         date.setText(formatDate(dateObject));
         time.setText(formatTime(dateObject));
 
         //Location
-        String locale = currentQuake.getPlace();
+        String locale = currentQuake.getProperties().getPlace();
         if(locale.contains("of")){
             String[] location = locale.split("(?<=of )");
             locationOffset.setText(location[0].toUpperCase());
@@ -57,10 +59,10 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquakes> {
         }
 
         //Magnitude and circle background
-        magnitude.setText(formatMagnitude(currentQuake.getMagnitude()));
+        magnitude.setText(formatMagnitude(currentQuake.getProperties().getMagnitude()));
         GradientDrawable magnitudeCircle = (GradientDrawable) magnitude.getBackground();
         // Get the appropriate background color based on the current earthquake magnitude
-        int magnitudeColor = getMagnitudeColor(currentQuake.getMagnitude());
+        int magnitudeColor = getMagnitudeColor(currentQuake.getProperties().getMagnitude());
         // Set the color on the magnitude circle
         magnitudeCircle.setColor(magnitudeColor);
 
