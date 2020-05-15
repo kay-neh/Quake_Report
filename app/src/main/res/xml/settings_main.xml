@@ -11,21 +11,16 @@
         android:entries="@array/settings_order_by_labels"
         android:entryValues="@array/settings_order_by_values"
         android:key="@string/settings_order_by_key"
-        android:title="@string/settings_order_by_label" />
-
-    <EditTextPreference
-        android:defaultValue="@string/settings_min_magnitude_default"
-        android:inputType="numberDecimal"
-        android:key="@string/settings_min_magnitude_key"
-        android:selectAllOnFocus="true"
-        android:title="@string/settings_min_magnitude_label" />
+        android:title="@string/settings_order_by_label"
+        android:icon="@drawable/order_by"/>
 
     <EditTextPreference
         android:defaultValue="@string/settings_limit_default"
         android:inputType="numberDecimal"
         android:key="@string/settings_limit_key"
         android:selectAllOnFocus="true"
-        android:title="@string/settings_limit_label" />
+        android:title="@string/settings_limit_label"
+        android:icon="@drawable/limit"/>
 
     </PreferenceCategory>
 
@@ -35,7 +30,10 @@
         <SwitchPreferenceCompat
             android:title="@string/settings_dark_mode_label"
             android:key="@string/settings_dark_mode_key"
-            android:icon="@drawable/baseline_brightness_3_24"
+            android:defaultValue="@bool/settings_dark_mode_defult"
+            android:icon="@drawable/night_mode"
+            android:summaryOn="On"
+            android:summaryOff="Off"
             />
 
     </PreferenceCategory>

@@ -5,14 +5,13 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.quakereport.POJO.Features;
+import com.example.quakereport.Database.QuakeData;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -20,54 +19,99 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class EarthquakeAdapter extends ArrayAdapter<Features> {
 
-    public EarthquakeAdapter(@NonNull Context context, @NonNull List<Features> objects) {
-        super(context, 0, objects);
+public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.EarthquakeVH> {
+
+    public interface ListItemClickListener{
+        void onListItemClick(int index);
+    }
+
+    final private ListItemClickListener mOnclickListener;
+    private Context context;
+    private List<QuakeData> quakeData;
+
+    public EarthquakeAdapter(Context context, ListItemClickListener mOnclickListener){
+        this.context = context;
+        this.mOnclickListener = mOnclickListener;
+    }
+
+    class EarthquakeVH extends RecyclerView.ViewHolder {
+
+        TextView magnitude,locationOffset,primaryLocation,date,time;
+
+            EarthquakeVH(@NonNull View itemView) {
+            super(itemView);
+            magnitude = itemView.findViewById(R.id.magnitude);
+            locationOffset = itemView.findViewById(R.id.location_offset);
+            primaryLocation = itemView.findViewById(R.id.primary_location);
+            date = itemView.findViewById(R.id.date);
+            time = itemView.findViewById(R.id.time);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int index = getAdapterPosition();
+                    mOnclickListener.onListItemClick(index);
+                }
+            });
+        }
     }
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View listItemView = convertView;
-        if(listItemView == null){
-            listItemView = LayoutInflater.from(getContext()).inflate(R.layout.earthquake_listview,parent,false);
+    public EarthquakeVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        View view = inflater.inflate(R.layout.earthquake_recycler_view, parent, false);
+        return new EarthquakeVH(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull EarthquakeVH holder, int position) {
+        if(quakeData != null){
+            QuakeData currentQuake = quakeData.get(position);
+
+            //Date and time
+            Date dateObject = new Date(currentQuake.getTime());
+            holder.date.setText(formatDate(dateObject));
+            holder.time.setText(formatTime(dateObject));
+
+            //Location
+            String locale = currentQuake.getPlace();
+            if(locale.contains("of")){
+                String[] location = locale.split("(?<=of )");
+                holder.locationOffset.setText(location[0].toUpperCase());
+                holder.primaryLocation.setText(location[1]);
+            }else{
+                String offset = "NEAR THE";
+                holder.locationOffset.setText(offset);
+                holder.primaryLocation.setText(locale);
+            }
+
+            //Magnitude and circle background
+            holder.magnitude.setText(formatMagnitude(currentQuake.getMagnitude()));
+            GradientDrawable magnitudeCircle = (GradientDrawable) holder.magnitude.getBackground();
+            // Get the appropriate background color based on the current earthquake magnitude
+            int magnitudeColor = getMagnitudeColor(currentQuake.getMagnitude());
+            // Set the color on the magnitude circle
+            magnitudeCircle.setColor(magnitudeColor);
         }
-        //Updating the UI
-        Features currentQuake = getItem(position);
-        TextView magnitude = listItemView.findViewById(R.id.magnitude);
-        TextView locationOffset = listItemView.findViewById(R.id.location_offset);
-        TextView primaryLocation = listItemView.findViewById(R.id.primary_location);
-        TextView date = listItemView.findViewById(R.id.date);
-        TextView time = listItemView.findViewById(R.id.time);
+    }
 
-        //Date and time
-        Date dateObject = new Date(currentQuake.getProperties().getTime());
-        date.setText(formatDate(dateObject));
-        time.setText(formatTime(dateObject));
+    @Override
+    public int getItemCount() {
+        if (quakeData != null)
+            return quakeData.size();
+        else return 0;
+    }
 
-        //Location
-        String locale = currentQuake.getProperties().getPlace();
-        if(locale.contains("of")){
-            String[] location = locale.split("(?<=of )");
-            locationOffset.setText(location[0].toUpperCase());
-            primaryLocation.setText(location[1]);
-        }else{
-            String offset = "NEAR THE";
-            locationOffset.setText(offset);
-            primaryLocation.setText(locale);
-        }
+    public void setQuakes(List<QuakeData> quakes){
+        quakeData = quakes;
+        notifyDataSetChanged();
+    }
 
-        //Magnitude and circle background
-        magnitude.setText(formatMagnitude(currentQuake.getProperties().getMagnitude()));
-        GradientDrawable magnitudeCircle = (GradientDrawable) magnitude.getBackground();
-        // Get the appropriate background color based on the current earthquake magnitude
-        int magnitudeColor = getMagnitudeColor(currentQuake.getProperties().getMagnitude());
-        // Set the color on the magnitude circle
-        magnitudeCircle.setColor(magnitudeColor);
-
-
-        return listItemView;
+    public int getRoomItemId(int index){
+        return quakeData.get(index).getId();
     }
 
     private String formatDate(Date dateObject){
@@ -121,6 +165,7 @@ public class EarthquakeAdapter extends ArrayAdapter<Features> {
                 magnitudeColorResourceId = R.color.magnitude10plus;
                 break;
         }
-        return ContextCompat.getColor(getContext(), magnitudeColorResourceId);
+        return ContextCompat.getColor(context, magnitudeColorResourceId);
     }
+
 }

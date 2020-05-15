@@ -1,7 +1,12 @@
 package com.example.quakereport;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
@@ -10,73 +15,50 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.quakereport.POJO.Earthquakes;
-import com.example.quakereport.Network.GetEarthquakes;
-import com.example.quakereport.Network.RetrofitClient;
-import com.example.quakereport.POJO.Features;
+import com.example.quakereport.Database.QuakeData;
+
 import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 public class EarthquakeActivity extends AppCompatActivity {
-    ListView earthquakeListView;
 
-    TextView emptyTxt,emptyTxtDesc;
-    ImageView emptyImg;
-    View emptyState;
-    MaterialButton refresh;
-
-    EarthquakeAdapter adapter;
+    RecyclerView earthquakeRecyclerView;
+    View emptyView;
     ProgressBar loading;
-
+    SwipeRefreshLayout swipe;
+    MaterialButton refresh;
+    EarthquakeAdapter adapter;
     SharedPreferences sharedPrefs;
+    SharedPreferences.OnSharedPreferenceChangeListener spListen;
+    EarthquakeViewModel earthquakeViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_earthquake);
 
-        //shared preference object initialized
+        //Init sharedPreference
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //Initialize all ui components
-        earthquakeListView = findViewById(R.id.list);
+        Boolean nightValue = sharedPrefs.getBoolean(
+                getString(R.string.settings_dark_mode_key),
+                getResources().getBoolean(R.bool.settings_dark_mode_defult));
 
-        emptyState = findViewById(R.id.new_empty_test);
-        emptyImg = findViewById(R.id.empty_img);
-        emptyTxt = findViewById(R.id.empty_txt);
-        emptyTxtDesc = findViewById(R.id.empty_txt_desc);
+        setNightMode(nightValue);
+
+        //Init viewModel
+        earthquakeViewModel = new ViewModelProvider(this).get(EarthquakeViewModel.class);
+
+        //Initialize all ui components
+        earthquakeRecyclerView = findViewById(R.id.list);
+        emptyView = findViewById(R.id.new_empty_test);
+        swipe = findViewById(R.id.swipe_down);
         refresh = findViewById(R.id.refresh_button);
         loading = findViewById(R.id.progress_bar);
-
-        runBackgroundTask();
-
-        refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emptyState.setVisibility(View.GONE);
-                loading.setVisibility(View.VISIBLE);
-                runBackgroundTask();
-            }
-        });
-
-    }
-
-    //Helper method to make retrofit call to usgs server
-    public void runBackgroundTask(){
-        String minMagnitude = sharedPrefs.getString(
-                getString(R.string.settings_min_magnitude_key),
-                getString(R.string.settings_min_magnitude_default));
+        initAdapter();
 
         String orderBy = sharedPrefs.getString(
                 getString(R.string.settings_order_by_key),
@@ -86,43 +68,91 @@ public class EarthquakeActivity extends AppCompatActivity {
                 getString(R.string.settings_limit_key),
                 getString(R.string.settings_limit_default));
 
-        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
-        Call<Earthquakes> call = service.getAllEarthquakes("geojson",limit,minMagnitude,orderBy);
+        //Using the ViewModel to query the repository
+        earthquakeViewModel.updateRoomDb(this);
+        getRoomData(orderBy,limit);
 
-        call.enqueue(new Callback<Earthquakes>() {
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onResponse(Call<Earthquakes> call, Response<Earthquakes> response) {
-                if(response.body() != null)
-                    updateUI(response.body().getFeatures());
+            public void onRefresh() {
+                emptyView.setVisibility(View.GONE);
+                swipe.setRefreshing(false);
+                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this);
+                getRoomData(orderBy,limit);
             }
+        });
 
+        //OnSharedPrefChange listener object
+        spListen = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
-            public void onFailure(Call<Earthquakes> call, Throwable t) {
-                loading.setVisibility(View.GONE);
-                earthquakeListView.setEmptyView(emptyState);
-                Toast.makeText(EarthquakeActivity.this,"unable to load users",Toast.LENGTH_SHORT).show();
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if(key.equals(getString(R.string.settings_order_by_key))){
+                    getRoomData(sharedPreferences.getString(key,getString(R.string.settings_order_by_default))
+                            ,
+                            sharedPreferences.getString(
+                            getString(R.string.settings_limit_key),
+                            getString(R.string.settings_limit_default)));
+                }
+                if(key.equals(getString(R.string.settings_limit_key))){
+                    getRoomData(sharedPreferences.getString(getString(R.string.settings_order_by_key),
+                            getString(R.string.settings_order_by_default))
+                            ,
+                            sharedPreferences.getString(key,getString(R.string.settings_limit_default)));
+                }
+                if(key.equals(getString(R.string.settings_dark_mode_key))){
+                    setNightMode(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.settings_dark_mode_defult)));
+                }
+            }
+        };
+        sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
+
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emptyView.setVisibility(View.GONE);
+                loading.setVisibility(View.VISIBLE);
+                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this);
+
             }
         });
     }
 
-    public void updateUI(List<Features> features) {
-
-        adapter = new EarthquakeAdapter(this, features);
-        earthquakeListView.setAdapter(adapter);
-        loading.setVisibility(View.GONE);
-        //earthquakeListView.setEmptyView(emptyState);
-        earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    public void initAdapter() {
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        earthquakeRecyclerView.setLayoutManager(llm);
+        adapter = new EarthquakeAdapter(this, new EarthquakeAdapter.ListItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //handle click events
+            public void onListItemClick(int index) {
+                //handle click events here
+            }
+        });
+//        loading.setVisibility(View.GONE);
+        earthquakeRecyclerView.setAdapter(adapter);
+    }
+
+    public void getRoomData(String orderBy,String limit){
+        earthquakeViewModel.getAllRoomQuakes(orderBy,limit).observe(this, new Observer<List<QuakeData>>() {
+            @Override
+            public void onChanged(List<QuakeData> quakeData) {
+                if(quakeData != null) {
+                    loading.setVisibility(View.GONE);
+                    adapter.setQuakes(quakeData);
+                    if(!quakeData.isEmpty()){
+                        emptyView.setVisibility(View.GONE);
+                    }else{
+                        emptyView.setVisibility(View.VISIBLE);
+                    }
+                }
             }
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        runBackgroundTask();
+    public void setNightMode(Boolean nightValue){
+        if(nightValue){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     @Override
@@ -140,5 +170,11 @@ public class EarthquakeActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sharedPrefs.unregisterOnSharedPreferenceChangeListener(spListen);
     }
 }

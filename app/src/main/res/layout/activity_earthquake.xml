@@ -6,14 +6,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-        <ListView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_down"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:divider="@drawable/inset_divider"
-            android:orientation="vertical" />
+            />
 
-<!--    emptyview-->
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!--    emptyview-->
     <RelativeLayout
         android:id="@+id/new_empty_test"
         android:layout_width="wrap_content"
@@ -26,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/error" />
+            android:src="@drawable/no_internet" />
 
         <TextView
             android:id="@+id/empty_txt"
@@ -38,7 +44,7 @@
             android:fontFamily="sans-serif-medium"
             android:textAppearance="?android:textAppearanceMedium"
             android:textColor="@color/textColorEarthquake"
-            android:text="Error getting earthquakes" />
+            android:text="@string/no_internet" />
 
         <TextView
             android:id="@+id/empty_txt_desc"
@@ -50,7 +56,7 @@
             android:paddingTop="4dp"
             android:textColor="@android:color/darker_gray"
             android:textAppearance="?android:textAppearanceSmall"
-            android:text="Try refreshing the page" />
+            android:text="@string/no_internet_desc" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/refresh_button"
@@ -60,6 +66,7 @@
             android:layout_marginTop="4dp"
             android:layout_centerHorizontal="true"
             app:backgroundTint="@color/colorPrimary"
+            android:visibility="gone"
             android:text="@string/refresh"/>
 
     </RelativeLayout>

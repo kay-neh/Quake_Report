@@ -3,6 +3,10 @@ package com.example.quakereport.POJO;
 import com.google.gson.annotations.SerializedName;
 
 public class Properties {
+
+    @SerializedName("ids")
+    private String eventId;
+
     @SerializedName("mag")
     private double magnitude;
 
@@ -12,10 +16,15 @@ public class Properties {
     @SerializedName("time")
     private long time;
 
-    public Properties(double magnitude, String place, long time) {
+    public Properties(String eventId, double magnitude, String place, long time) {
+        this.eventId = eventId;
         this.magnitude = magnitude;
         this.place = place;
         this.time = time;
+    }
+
+    public String getEventId() {
+        return eventId;
     }
 
     public double getMagnitude() {
@@ -28,6 +37,10 @@ public class Properties {
 
     public long getTime() {
         return time;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     public void setMagnitude(double magnitude) {

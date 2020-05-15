@@ -7,6 +7,8 @@
     <color name="textColorEarthquake">@color/colorPrimary</color>
     <color name="textColorEarthquakeDetails">#B4BAC0</color>
 
+    <color name="iconColor">#000000</color>
+
     <!-- Color for an earthquake with magnitude 0 and 2 -->
     <color name="magnitude1">#4A7BA7</color>
 
