@@ -1,12 +1,15 @@
 package com.example.quakereport;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.lifecycle.LiveData;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.quakereport.Database.QuakeDao;
 import com.example.quakereport.Database.QuakeData;
@@ -14,6 +17,7 @@ import com.example.quakereport.Database.QuakeDatabase;
 import com.example.quakereport.Network.GetEarthquakes;
 import com.example.quakereport.Network.RetrofitClient;
 import com.example.quakereport.POJO.Earthquakes;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +29,7 @@ import retrofit2.Response;
  public class EarthquakeRepository {
 
     private QuakeDao quakeDao;
+
 
     public EarthquakeRepository(Application application) {
         QuakeDatabase quakeDatabase = QuakeDatabase.getDatabase(application);
@@ -40,7 +45,8 @@ import retrofit2.Response;
 
     //Reading Api response from USGS and
     //Store server response in roomDB
-    public void updateRoomDb(Context context){
+    public void updateRoomDb(Context context,SwipeRefreshLayout swipe){
+
 
         GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
         Call<Earthquakes> call = service.getAllEarthquakes("geojson","time","100");
@@ -62,7 +68,19 @@ import retrofit2.Response;
 
             @Override
             public void onFailure(Call<Earthquakes> call, Throwable t) {
-                Toast.makeText(context,"Unable to fetch new data",Toast.LENGTH_SHORT).show();
+                Snackbar.make(swipe, "Unable to fetch new data", Snackbar.LENGTH_SHORT)
+                        .setAction("Retry", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // Respond to the click, such as by undoing the modification that caused
+                                // this message to be displayed
+                                updateRoomDb(context,swipe);
+                            }
+                        }).setActionTextColor(context.getColor(R.color.colorAccent))
+                        .setBackgroundTint(context.getColor(R.color.snackBarColor))
+                        .setTextColor(context.getColor(R.color.snackBarTextColor))
+                        .show();
+                //Toast.makeText(context,"Unable to fetch new data",Toast.LENGTH_SHORT).show();
             }
         });
     }

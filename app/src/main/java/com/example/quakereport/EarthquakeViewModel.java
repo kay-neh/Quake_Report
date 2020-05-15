@@ -6,6 +6,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.quakereport.Database.QuakeData;
 
@@ -20,8 +21,8 @@ public class EarthquakeViewModel extends AndroidViewModel {
         earthquakeRepository = new EarthquakeRepository(application);
     }
 
-    public void updateRoomDb(Context context){
-        earthquakeRepository.updateRoomDb(context);
+    public void updateRoomDb(Context context,SwipeRefreshLayout swipe){
+        earthquakeRepository.updateRoomDb(context,swipe);
     }
 
     public LiveData<List<QuakeData>> getAllRoomQuakes(String order, String limit){

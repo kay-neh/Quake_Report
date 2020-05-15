@@ -69,7 +69,7 @@ public class EarthquakeActivity extends AppCompatActivity {
                 getString(R.string.settings_limit_default));
 
         //Using the ViewModel to query the repository
-        earthquakeViewModel.updateRoomDb(this);
+        earthquakeViewModel.updateRoomDb(EarthquakeActivity.this,swipe);
         getRoomData(orderBy,limit);
 
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -77,7 +77,7 @@ public class EarthquakeActivity extends AppCompatActivity {
             public void onRefresh() {
                 emptyView.setVisibility(View.GONE);
                 swipe.setRefreshing(false);
-                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this);
+                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this,swipe);
                 getRoomData(orderBy,limit);
             }
         });
@@ -111,7 +111,7 @@ public class EarthquakeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 emptyView.setVisibility(View.GONE);
                 loading.setVisibility(View.VISIBLE);
-                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this);
+                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this,swipe);
 
             }
         });

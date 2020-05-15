@@ -9,6 +9,9 @@
 
     <color name="iconColor">#000000</color>
 
+    <color name="snackBarColor">#F1F1F1</color>
+    <color name="snackBarTextColor">#000000</color>
+
     <!-- Color for an earthquake with magnitude 0 and 2 -->
     <color name="magnitude1">#4A7BA7</color>
 
