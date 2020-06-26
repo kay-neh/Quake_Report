@@ -22,7 +22,7 @@ import java.util.Locale;
 
 public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.EarthquakeVH> {
 
-    public interface ListItemClickListener{
+    public interface ListItemClickListener {
         void onListItemClick(int index);
     }
 
@@ -30,16 +30,16 @@ public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.Ea
     private Context context;
     private List<QuakeData> quakeData;
 
-    public EarthquakeAdapter(Context context, ListItemClickListener mOnclickListener){
+    public EarthquakeAdapter(Context context, ListItemClickListener mOnclickListener) {
         this.context = context;
         this.mOnclickListener = mOnclickListener;
     }
 
     class EarthquakeVH extends RecyclerView.ViewHolder {
 
-        TextView magnitude,locationOffset,primaryLocation,date,time;
+        TextView magnitude, locationOffset, primaryLocation, date, time;
 
-            EarthquakeVH(@NonNull View itemView) {
+        EarthquakeVH(@NonNull View itemView) {
             super(itemView);
             magnitude = itemView.findViewById(R.id.magnitude);
             locationOffset = itemView.findViewById(R.id.location_offset);
@@ -68,7 +68,7 @@ public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.Ea
 
     @Override
     public void onBindViewHolder(@NonNull EarthquakeVH holder, int position) {
-        if(quakeData != null){
+        if (quakeData != null) {
             QuakeData currentQuake = quakeData.get(position);
 
             //Date and time
@@ -78,11 +78,11 @@ public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.Ea
 
             //Location
             String locale = currentQuake.getPlace();
-            if(locale.contains("of")){
+            if (locale.contains("of")) {
                 String[] location = locale.split("(?<=of )");
                 holder.locationOffset.setText(location[0].toUpperCase());
                 holder.primaryLocation.setText(location[1]);
-            }else{
+            } else {
                 String offset = "NEAR THE";
                 holder.locationOffset.setText(offset);
                 holder.primaryLocation.setText(locale);
@@ -105,22 +105,22 @@ public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.Ea
         else return 0;
     }
 
-    public void setQuakes(List<QuakeData> quakes){
+    public void setQuakes(List<QuakeData> quakes) {
         quakeData = quakes;
         notifyDataSetChanged();
     }
 
-    public int getRoomItemId(int index){
+    public int getRoomItemId(int index) {
         return quakeData.get(index).getId();
     }
 
-    private String formatDate(Date dateObject){
+    private String formatDate(Date dateObject) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("LLL dd, yyyy", Locale.getDefault());
         return dateFormat.format(dateObject);
     }
 
-    private String formatTime(Date dateObject){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a",Locale.getDefault());
+    private String formatTime(Date dateObject) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
         return dateFormat.format(dateObject);
     }
 
@@ -129,10 +129,10 @@ public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.Ea
         return magnitudeFormat.format(magnitude);
     }
 
-    private int getMagnitudeColor(double magnitude){
+    private int getMagnitudeColor(double magnitude) {
         int magnitudeColorResourceId;
         int magnitudeFloor = (int) Math.floor(magnitude);
-        switch (magnitudeFloor){
+        switch (magnitudeFloor) {
             case 0:
             case 1:
                 magnitudeColorResourceId = R.color.magnitude1;

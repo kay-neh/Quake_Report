@@ -43,11 +43,10 @@ public class EarthquakeActivity extends AppCompatActivity {
         //Init sharedPreference
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        Boolean nightValue = sharedPrefs.getBoolean(
+        //Set Night mode
+        setNightMode(sharedPrefs.getBoolean(
                 getString(R.string.settings_dark_mode_key),
-                getResources().getBoolean(R.bool.settings_dark_mode_defult));
-
-        setNightMode(nightValue);
+                getResources().getBoolean(R.bool.settings_dark_mode_defult)));
 
         //Init viewModel
         earthquakeViewModel = new ViewModelProvider(this).get(EarthquakeViewModel.class);
@@ -60,52 +59,50 @@ public class EarthquakeActivity extends AppCompatActivity {
         loading = findViewById(R.id.progress_bar);
         initAdapter();
 
-        String orderBy = sharedPrefs.getString(
+        //Using the ViewModel to update and query the repository
+        earthquakeViewModel.updateRoomDb(EarthquakeActivity.this, swipe);
+        getRoomData(sharedPrefs.getString(
                 getString(R.string.settings_order_by_key),
-                getString(R.string.settings_order_by_default));
+                getString(R.string.settings_order_by_default)),
+                sharedPrefs.getString(
+                        getString(R.string.settings_limit_key),
+                        getString(R.string.settings_limit_default)));
 
-        String limit = sharedPrefs.getString(
-                getString(R.string.settings_limit_key),
-                getString(R.string.settings_limit_default));
-
-        //Using the ViewModel to query the repository
-        earthquakeViewModel.updateRoomDb(EarthquakeActivity.this,swipe);
-        getRoomData(orderBy,limit);
-
-        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                emptyView.setVisibility(View.GONE);
-                swipe.setRefreshing(false);
-                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this,swipe);
-                getRoomData(orderBy,limit);
-            }
-        });
-
-        //OnSharedPrefChange listener object
+        //Set up OnSharedPrefChange listener object
         spListen = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if(key.equals(getString(R.string.settings_order_by_key))){
-                    getRoomData(sharedPreferences.getString(key,getString(R.string.settings_order_by_default))
+                if (key.equals(getString(R.string.settings_order_by_key))) {
+                    getRoomData(sharedPreferences.getString(key, getString(R.string.settings_order_by_default))
                             ,
                             sharedPreferences.getString(
-                            getString(R.string.settings_limit_key),
-                            getString(R.string.settings_limit_default)));
+                                    getString(R.string.settings_limit_key),
+                                    getString(R.string.settings_limit_default)));
                 }
-                if(key.equals(getString(R.string.settings_limit_key))){
+                if (key.equals(getString(R.string.settings_limit_key))) {
                     getRoomData(sharedPreferences.getString(getString(R.string.settings_order_by_key),
                             getString(R.string.settings_order_by_default))
                             ,
-                            sharedPreferences.getString(key,getString(R.string.settings_limit_default)));
+                            sharedPreferences.getString(key, getString(R.string.settings_limit_default)));
                 }
-                if(key.equals(getString(R.string.settings_dark_mode_key))){
+                if (key.equals(getString(R.string.settings_dark_mode_key))) {
                     setNightMode(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.settings_dark_mode_defult)));
                 }
             }
         };
         sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
 
+        swipe.setOnRefreshListener(() -> {
+            emptyView.setVisibility(View.GONE);
+            earthquakeViewModel.updateRoomDb(EarthquakeActivity.this, swipe);
+            getRoomData(sharedPrefs.getString(
+                    getString(R.string.settings_order_by_key),
+                    getString(R.string.settings_order_by_default)),
+                    sharedPrefs.getString(
+                            getString(R.string.settings_limit_key),
+                            getString(R.string.settings_limit_default)));
+        });
+ /*
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -115,6 +112,7 @@ public class EarthquakeActivity extends AppCompatActivity {
 
             }
         });
+ */
     }
 
     public void initAdapter() {
@@ -126,20 +124,19 @@ public class EarthquakeActivity extends AppCompatActivity {
                 //handle click events here
             }
         });
-//        loading.setVisibility(View.GONE);
         earthquakeRecyclerView.setAdapter(adapter);
     }
 
-    public void getRoomData(String orderBy,String limit){
-        earthquakeViewModel.getAllRoomQuakes(orderBy,limit).observe(this, new Observer<List<QuakeData>>() {
+    public void getRoomData(String orderBy, String limit) {
+        earthquakeViewModel.getAllRoomQuakes(orderBy, limit).observe(this, new Observer<List<QuakeData>>() {
             @Override
             public void onChanged(List<QuakeData> quakeData) {
-                if(quakeData != null) {
+                if (quakeData != null) {
                     loading.setVisibility(View.GONE);
                     adapter.setQuakes(quakeData);
-                    if(!quakeData.isEmpty()){
+                    if (!quakeData.isEmpty()) {
                         emptyView.setVisibility(View.GONE);
-                    }else{
+                    } else {
                         emptyView.setVisibility(View.VISIBLE);
                     }
                 }
@@ -147,10 +144,10 @@ public class EarthquakeActivity extends AppCompatActivity {
         });
     }
 
-    public void setNightMode(Boolean nightValue){
-        if(nightValue){
+    public void setNightMode(Boolean nightValue) {
+        if (nightValue) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        }else{
+        } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
     }

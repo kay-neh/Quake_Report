@@ -11,5 +11,5 @@ public interface GetEarthquakes {
     Call<Earthquakes> getAllEarthquakes(@Query("format") String format,
                                         @Query("orderby") String orderBy,
                                         @Query("limit") String limit
-                                              );
+    );
 }

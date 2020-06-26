@@ -21,11 +21,11 @@ public class EarthquakeViewModel extends AndroidViewModel {
         earthquakeRepository = new EarthquakeRepository(application);
     }
 
-    public void updateRoomDb(Context context,SwipeRefreshLayout swipe){
-        earthquakeRepository.updateRoomDb(context,swipe);
+    public void updateRoomDb(Context context, SwipeRefreshLayout swipe) {
+        earthquakeRepository.updateRoomDb(context, swipe);
     }
 
-    public LiveData<List<QuakeData>> getAllRoomQuakes(String order, String limit){
+    public LiveData<List<QuakeData>> getAllRoomQuakes(String order, String limit) {
         return earthquakeRepository.getAllRoomQuake(order, limit);
     }
 }

@@ -8,7 +8,7 @@ public class RetrofitClient {
     private static final String BASE_URL = "https://earthquake.usgs.gov/fdsnws/event/1/";
     private static Retrofit retrofit;
 
-    public static Retrofit getRetrofitInstance(){
+    public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {
             retrofit = new retrofit2.Retrofit.Builder()
                     .baseUrl(BASE_URL)

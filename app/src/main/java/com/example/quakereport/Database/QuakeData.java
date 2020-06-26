@@ -5,7 +5,7 @@ import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "quake_data", indices = {@Index(value = {"eventId"},unique = true)})
+@Entity(tableName = "quake_data", indices = {@Index(value = {"eventId"}, unique = true)})
 public class QuakeData {
 
     @PrimaryKey(autoGenerate = true)
