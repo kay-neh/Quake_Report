@@ -15,7 +15,7 @@ public interface QuakeDao {
 
     //Testing RawQuery for Read all operation
     @RawQuery(observedEntities = QuakeData.class)
-    LiveData<List<QuakeData>> getRawQueryData(SupportSQLiteQuery query);
+    LiveData<List<QuakeData>> getAllQuakes(SupportSQLiteQuery query);
 
     //Read single operation
     @Query("SELECT * FROM quake_data WHERE id = :id")
@@ -25,7 +25,7 @@ public interface QuakeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAllQuakes(List<QuakeData> quakeData);
 
-    //Delete operation
+    //Delete all operation
     @Query("DELETE FROM quake_data")
     void deleteAll();
 }
