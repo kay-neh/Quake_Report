@@ -1,12 +1,10 @@
 package com.example.quakereport;
 
 import android.app.Application;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.quakereport.Database.QuakeData;
 
@@ -21,11 +19,16 @@ public class EarthquakeViewModel extends AndroidViewModel {
         earthquakeRepository = new EarthquakeRepository(application);
     }
 
-    public void updateRoomDb(Context context, SwipeRefreshLayout swipe) {
-        earthquakeRepository.updateRoomDb(context, swipe);
+    public void syncDataSource() {
+        earthquakeRepository.syncDataSource();
     }
 
-    public LiveData<List<QuakeData>> getAllRoomQuakes(String order, String limit) {
-        return earthquakeRepository.getAllRoomQuake(order, limit);
+    public LiveData<List<QuakeData>> getAllDataEntries(String order, String limit) {
+        return earthquakeRepository.getDataSourceEntries(order, limit);
     }
+
+    public LiveData<QuakeData> getDataSourceEntryById(int id) {
+        return earthquakeRepository.getDataSourceEntryById(id);
+    }
+
 }

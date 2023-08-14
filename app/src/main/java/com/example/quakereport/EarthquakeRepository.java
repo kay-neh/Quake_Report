@@ -1,13 +1,11 @@
 package com.example.quakereport;
 
 import android.app.Application;
-import android.content.Context;
-import android.view.View;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.quakereport.Database.QuakeDao;
 import com.example.quakereport.Database.QuakeData;
@@ -15,7 +13,6 @@ import com.example.quakereport.Database.QuakeDatabase;
 import com.example.quakereport.Network.GetEarthquakes;
 import com.example.quakereport.Network.RetrofitClient;
 import com.example.quakereport.POJO.Earthquakes;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,54 +30,26 @@ public class EarthquakeRepository {
         quakeDao = quakeDatabase.quakeDao();
     }
 
-    //Testing rawQuery Read all operation from roomDb
-    public LiveData<List<QuakeData>> getAllRoomQuake(String order, String limit) {
+    //Get all entries from datasource
+    public LiveData<List<QuakeData>> getDataSourceEntries(String order, String limit) {
         String statement = "SELECT * FROM quake_data ORDER BY " + order + " LIMIT " + limit;
         SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
-        return quakeDao.getRawQueryData(query);
+        return quakeDao.getAllQuakes(query);
+    }
+    //Get single entry
+
+    public LiveData<QuakeData> getDataSourceEntryById(int id) {
+        return quakeDao.getSingleQuakeData(id);
     }
 
-    //Read Api response from USGS and Store server response in Room
-    public void updateRoomDb(Context context, SwipeRefreshLayout swipe) {
-        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
-        Call<Earthquakes> call = service.getAllEarthquakes("geojson", "time", "100");
-
-        call.enqueue(new Callback<Earthquakes>() {
-            @Override
-            public void onResponse(Call<Earthquakes> call, Response<Earthquakes> response) {
-                List<QuakeData> data = new ArrayList<>();
-                if (response.body() != null) {
-                    for (int i = 0; i < response.body().getFeatures().size(); i++) {
-                        data.add(new QuakeData(response.body().getFeatures().get(i).getProperties().getEventId(),
-                                response.body().getFeatures().get(i).getProperties().getMagnitude(),
-                                response.body().getFeatures().get(i).getProperties().getPlace(),
-                                response.body().getFeatures().get(i).getProperties().getTime()));
-                    }
-                    insertAllQuake(data);
-                    swipe.setRefreshing(false);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Earthquakes> call, Throwable t) {
-                swipe.setRefreshing(false);
-                Snackbar.make(swipe, "Unable to fetch new data", Snackbar.LENGTH_SHORT)
-                        .setAction("Retry", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                updateRoomDb(context, swipe);
-                            }
-                        })
-                        .setActionTextColor(context.getColor(R.color.colorAccent))
-                        .setBackgroundTint(context.getColor(R.color.snackBarColor))
-                        .setTextColor(context.getColor(R.color.snackBarTextColor))
-                        .show();
-            }
-        });
+    //Update local data entry with remote
+    private void updateDataSource(List<QuakeData> data) {
+        //deleteLocalData();
+        insertAllData(data);
     }
 
     //Insert all operation
-    private void insertAllQuake(final List<QuakeData> quakeData) {
+    private void insertAllData(final List<QuakeData> quakeData) {
         QuakeDatabase.databaseWriteExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -90,7 +59,7 @@ public class EarthquakeRepository {
     }
 
     //Delete operation
-    private void clearRoomDb() {
+    private void deleteLocalData() {
         QuakeDatabase.databaseWriteExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -99,9 +68,30 @@ public class EarthquakeRepository {
         });
     }
 
-    //Read single operation
-    public LiveData<QuakeData> getSingleRoomQuake(final int id) {
-        return quakeDao.getSingleQuakeData(id);
+    // Get Network Data
+    public void syncDataSource(){
+        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
+        Call<Earthquakes> call = service.getAllEarthquakes();
+        List<QuakeData> data = new ArrayList<>();
+        call.enqueue(new Callback<Earthquakes>() {
+            @Override
+            public void onResponse(Call<Earthquakes> call, Response<Earthquakes> response) {
+                if (response.body() != null) {
+                    for (int i = 0; i < response.body().getFeatures().size(); i++) {
+                        data.add(new QuakeData(response.body().getFeatures().get(i).getProperties().getEventId(),
+                                response.body().getFeatures().get(i).getProperties().getMagnitude(),
+                                response.body().getFeatures().get(i).getProperties().getPlace(),
+                                response.body().getFeatures().get(i).getProperties().getTime()));
+                    }
+                    updateDataSource(data);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Earthquakes> call, Throwable t) {
+                Log.i("Network Error response", t.toString());
+            }
+        });
     }
 
 }

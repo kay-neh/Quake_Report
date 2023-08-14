@@ -20,6 +20,7 @@ import android.widget.ProgressBar;
 import com.example.quakereport.Database.QuakeData;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -55,12 +56,11 @@ public class EarthquakeActivity extends AppCompatActivity {
         earthquakeRecyclerView = findViewById(R.id.list);
         emptyView = findViewById(R.id.new_empty_test);
         swipe = findViewById(R.id.swipe_down);
-        refresh = findViewById(R.id.refresh_button);
         loading = findViewById(R.id.progress_bar);
         initAdapter();
 
-        //Using the ViewModel to update and query the repository
-        earthquakeViewModel.updateRoomDb(EarthquakeActivity.this, swipe);
+        //Sync Data and get the list
+        earthquakeViewModel.syncDataSource();
         getRoomData(sharedPrefs.getString(
                 getString(R.string.settings_order_by_key),
                 getString(R.string.settings_order_by_default)),
@@ -92,27 +92,24 @@ public class EarthquakeActivity extends AppCompatActivity {
         };
         sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
 
+        //Consider replacing this with WorkManager
         swipe.setOnRefreshListener(() -> {
             emptyView.setVisibility(View.GONE);
-            earthquakeViewModel.updateRoomDb(EarthquakeActivity.this, swipe);
-            getRoomData(sharedPrefs.getString(
-                    getString(R.string.settings_order_by_key),
-                    getString(R.string.settings_order_by_default)),
-                    sharedPrefs.getString(
-                            getString(R.string.settings_limit_key),
-                            getString(R.string.settings_limit_default)));
+            //earthquakeViewModel.syncDataSource();
+            swipe.setRefreshing(false);
+            Snackbar.make(swipe, "Up to date", Snackbar.LENGTH_SHORT)
+//                    .setAction("Retry", new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            updateRoomDb(context, swipe);
+//                        }
+//                    })
+//                    .setActionTextColor(getColor(R.color.colorAccent))
+                    .setBackgroundTint(getColor(R.color.snackBarColor))
+                    .setTextColor(getColor(R.color.snackBarTextColor))
+                    .show();
         });
- /*
-        refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emptyView.setVisibility(View.GONE);
-                loading.setVisibility(View.VISIBLE);
-                earthquakeViewModel.updateRoomDb(EarthquakeActivity.this,swipe);
 
-            }
-        });
- */
     }
 
     public void initAdapter() {
@@ -122,13 +119,14 @@ public class EarthquakeActivity extends AppCompatActivity {
             @Override
             public void onListItemClick(int index) {
                 //handle click events here
+                int itemId = adapter.getRoomItemId(index);
             }
         });
         earthquakeRecyclerView.setAdapter(adapter);
     }
 
     public void getRoomData(String orderBy, String limit) {
-        earthquakeViewModel.getAllRoomQuakes(orderBy, limit).observe(this, new Observer<List<QuakeData>>() {
+        earthquakeViewModel.getAllDataEntries(orderBy, limit).observe(this, new Observer<List<QuakeData>>() {
             @Override
             public void onChanged(List<QuakeData> quakeData) {
                 if (quakeData != null) {
@@ -167,6 +165,13 @@ public class EarthquakeActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //Re-Sync Datasource
+        earthquakeViewModel.syncDataSource();
     }
 
     @Override

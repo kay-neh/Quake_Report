@@ -41,7 +41,7 @@
             android:layout_centerHorizontal="true"
             android:fontFamily="sans-serif-medium"
             android:paddingTop="16dp"
-            android:text="@string/no_internet"
+            android:text="@string/no_quake_desc"
             android:textAppearance="?android:textAppearanceMedium"
             android:textColor="@color/textColorEarthquake" />
 
@@ -57,16 +57,6 @@
             android:textAppearance="?android:textAppearanceSmall"
             android:textColor="@android:color/darker_gray" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/refresh_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/empty_txt_desc"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="4dp"
-            android:text="@string/refresh"
-            android:visibility="gone"
-            app:backgroundTint="@color/colorPrimary" />
 
     </RelativeLayout>
 

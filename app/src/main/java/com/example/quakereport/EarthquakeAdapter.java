@@ -78,15 +78,21 @@ public class EarthquakeAdapter extends RecyclerView.Adapter<EarthquakeAdapter.Ea
 
             //Location
             String locale = currentQuake.getPlace();
-            if (locale.contains("of")) {
-                String[] location = locale.split("(?<=of )");
-                holder.locationOffset.setText(location[0].toUpperCase());
-                holder.primaryLocation.setText(location[1]);
-            } else {
-                String offset = "NEAR THE";
-                holder.locationOffset.setText(offset);
-                holder.primaryLocation.setText(locale);
+
+            if(locale != null){
+
+                if (locale.contains("of")) {
+                    String[] location = locale.split("(?<=of )");
+                    holder.locationOffset.setText(location[0].toUpperCase());
+                    holder.primaryLocation.setText(location[1]);
+                } else {
+                    String offset = "NEAR THE";
+                    holder.locationOffset.setText(offset);
+                    holder.primaryLocation.setText(locale);
+                }
+
             }
+
 
             //Magnitude and circle background
             holder.magnitude.setText(formatMagnitude(currentQuake.getMagnitude()));
