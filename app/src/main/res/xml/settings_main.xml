@@ -3,40 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="@string/settings_menu_item">
 
-    <PreferenceCategory
-        app:title="Earthquake Preference">
+    <PreferenceCategory app:title="Earthquake Preference">
 
-    <ListPreference
-        android:defaultValue="@string/settings_order_by_default"
-        android:entries="@array/settings_order_by_labels"
-        android:entryValues="@array/settings_order_by_values"
-        android:key="@string/settings_order_by_key"
-        android:title="@string/settings_order_by_label" />
+        <ListPreference
+            android:defaultValue="@string/settings_order_by_default"
+            android:entries="@array/settings_order_by_labels"
+            android:entryValues="@array/settings_order_by_values"
+            android:icon="@drawable/order_by"
+            android:key="@string/settings_order_by_key"
+            android:title="@string/settings_order_by_label" />
 
-    <EditTextPreference
-        android:defaultValue="@string/settings_min_magnitude_default"
-        android:inputType="numberDecimal"
-        android:key="@string/settings_min_magnitude_key"
-        android:selectAllOnFocus="true"
-        android:title="@string/settings_min_magnitude_label" />
-
-    <EditTextPreference
-        android:defaultValue="@string/settings_limit_default"
-        android:inputType="numberDecimal"
-        android:key="@string/settings_limit_key"
-        android:selectAllOnFocus="true"
-        android:title="@string/settings_limit_label" />
+        <EditTextPreference
+            android:defaultValue="@string/settings_limit_default"
+            android:icon="@drawable/limit"
+            android:key="@string/settings_limit_key"
+            android:selectAllOnFocus="true"
+            android:title="@string/settings_limit_label" />
 
     </PreferenceCategory>
 
-    <PreferenceCategory
-        app:title="Others">
+    <PreferenceCategory app:title="Others">
 
         <SwitchPreferenceCompat
-            android:title="@string/settings_dark_mode_label"
+            android:defaultValue="@bool/settings_dark_mode_defult"
+            android:icon="@drawable/night_mode"
             android:key="@string/settings_dark_mode_key"
-            android:icon="@drawable/baseline_brightness_3_24"
-            />
+            android:summaryOff="Off"
+            android:summaryOn="On"
+            android:title="@string/settings_dark_mode_label" />
 
     </PreferenceCategory>
 

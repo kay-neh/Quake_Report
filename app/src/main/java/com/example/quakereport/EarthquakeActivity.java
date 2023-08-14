@@ -1,90 +1,161 @@
 package com.example.quakereport;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
+
+import com.example.quakereport.Database.QuakeData;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class EarthquakeActivity extends AppCompatActivity {
-    ListView earthquakeListView;
 
-    TextView emptyTxt,emptyTxtDesc;
-    ImageView emptyImg;
-    LinearLayout emptyState;
-    MaterialButton refresh;
-
-    EarthquakeAdapter adapter;
+    RecyclerView earthquakeRecyclerView;
+    View emptyView;
     ProgressBar loading;
     SwipeRefreshLayout swipe;
-
+    MaterialButton refresh;
+    EarthquakeAdapter adapter;
     SharedPreferences sharedPrefs;
+    SharedPreferences.OnSharedPreferenceChangeListener spListen;
+    EarthquakeViewModel earthquakeViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_earthquake);
 
-        //shared preference object initialized
+        //Init sharedPreference
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        //Set Night mode
+        setNightMode(sharedPrefs.getBoolean(
+                getString(R.string.settings_dark_mode_key),
+                getResources().getBoolean(R.bool.settings_dark_mode_defult)));
+
+        //Init viewModel
+        earthquakeViewModel = new ViewModelProvider(this).get(EarthquakeViewModel.class);
+
         //Initialize all ui components
-        earthquakeListView = findViewById(R.id.list);
-
-        emptyState = findViewById(R.id.new_empty_test);
-        emptyImg = findViewById(R.id.empty_img);
-        emptyTxt = findViewById(R.id.empty_txt);
-        emptyTxtDesc = findViewById(R.id.empty_txt_desc);
-        refresh = findViewById(R.id.refresh_button);
-
-        loading = findViewById(R.id.progress_bar);
+        earthquakeRecyclerView = findViewById(R.id.list);
+        emptyView = findViewById(R.id.new_empty_test);
         swipe = findViewById(R.id.swipe_down);
+        loading = findViewById(R.id.progress_bar);
+        initAdapter();
 
-        startBackgroundThread();
-        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        //Sync Data and get the list
+        earthquakeViewModel.syncDataSource();
+        getRoomData(sharedPrefs.getString(
+                getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default)),
+                sharedPrefs.getString(
+                        getString(R.string.settings_limit_key),
+                        getString(R.string.settings_limit_default)));
+
+        //Set up OnSharedPrefChange listener object
+        spListen = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
-            public void onRefresh() {
-                emptyState.setVisibility(View.GONE);
-                startBackgroundThread();
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if (key.equals(getString(R.string.settings_order_by_key))) {
+                    getRoomData(sharedPreferences.getString(key, getString(R.string.settings_order_by_default))
+                            ,
+                            sharedPreferences.getString(
+                                    getString(R.string.settings_limit_key),
+                                    getString(R.string.settings_limit_default)));
+                }
+                if (key.equals(getString(R.string.settings_limit_key))) {
+                    getRoomData(sharedPreferences.getString(getString(R.string.settings_order_by_key),
+                            getString(R.string.settings_order_by_default))
+                            ,
+                            sharedPreferences.getString(key, getString(R.string.settings_limit_default)));
+                }
+                if (key.equals(getString(R.string.settings_dark_mode_key))) {
+                    setNightMode(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.settings_dark_mode_defult)));
+                }
+            }
+        };
+        sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
+
+        //Consider replacing this with WorkManager
+        swipe.setOnRefreshListener(() -> {
+            emptyView.setVisibility(View.GONE);
+            //earthquakeViewModel.syncDataSource();
+            swipe.setRefreshing(false);
+            Snackbar.make(swipe, "Up to date", Snackbar.LENGTH_SHORT)
+//                    .setAction("Retry", new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            updateRoomDb(context, swipe);
+//                        }
+//                    })
+//                    .setActionTextColor(getColor(R.color.colorAccent))
+                    .setBackgroundTint(getColor(R.color.snackBarColor))
+                    .setTextColor(getColor(R.color.snackBarTextColor))
+                    .show();
+        });
+
+    }
+
+    public void initAdapter() {
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        earthquakeRecyclerView.setLayoutManager(llm);
+        adapter = new EarthquakeAdapter(this, new EarthquakeAdapter.ListItemClickListener() {
+            @Override
+            public void onListItemClick(int index) {
+                //handle click events here
+                int itemId = adapter.getRoomItemId(index);
             }
         });
-        refresh.setOnClickListener(new View.OnClickListener() {
+        earthquakeRecyclerView.setAdapter(adapter);
+    }
+
+    public void getRoomData(String orderBy, String limit) {
+        earthquakeViewModel.getAllDataEntries(orderBy, limit).observe(this, new Observer<List<QuakeData>>() {
             @Override
-            public void onClick(View v) {
-                emptyState.setVisibility(View.GONE);
-                loading.setVisibility(View.VISIBLE);
-                startBackgroundThread();
+            public void onChanged(List<QuakeData> quakeData) {
+                if (quakeData != null) {
+                    loading.setVisibility(View.GONE);
+                    adapter.setQuakes(quakeData);
+                    if (!quakeData.isEmpty()) {
+                        emptyView.setVisibility(View.GONE);
+                    } else {
+                        emptyView.setVisibility(View.VISIBLE);
+                    }
+                }
             }
         });
     }
 
+    public void setNightMode(Boolean nightValue) {
+        if (nightValue) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+    }
 
-    //menu items
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -94,116 +165,18 @@ public class EarthquakeActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }//menu item end
-
-
-    public void updateUI(ArrayList<Earthquakes> earthquakes) {
-
-        adapter = new EarthquakeAdapter(this, earthquakes);
-        earthquakeListView.setAdapter(adapter);
-        loading.setVisibility(View.GONE);
-        swipe.setRefreshing(false);
-        earthquakeListView.setEmptyView(emptyState);
-        earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-              /*adapter.clear();
-                emptyTxt.setText(R.string.no_quake);
-                emptyTxtDesc.setText(R.string.no_quake_desc);
-                emptyImg.setImageResource(R.drawable.no_event);
-                */
-            }
-        });
-    }
-
-    public void startBackgroundThread(){
-        final String USGS_API_BASE_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query";
-
-        String minMagnitude = sharedPrefs.getString(
-                getString(R.string.settings_min_magnitude_key),
-                getString(R.string.settings_min_magnitude_default));
-
-        String orderBy = sharedPrefs.getString(
-                getString(R.string.settings_order_by_key),
-                getString(R.string.settings_order_by_default));
-
-        String limit = sharedPrefs.getString(
-                getString(R.string.settings_limit_key),
-                getString(R.string.settings_limit_default));
-
-        Uri baseUri = Uri.parse(USGS_API_BASE_URL);
-        Uri.Builder uriBuilder = baseUri.buildUpon();
-
-        uriBuilder.appendQueryParameter("format", "geojson");
-        uriBuilder.appendQueryParameter("limit", limit);
-        uriBuilder.appendQueryParameter("minmag", minMagnitude);
-        uriBuilder.appendQueryParameter("orderby", orderBy);
-
-        //checks for an active internet connection
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = null;
-        if (connMgr != null) { networkInfo = connMgr.getActiveNetworkInfo(); }
-
-        // Control flow for no internet connection
-        if (networkInfo != null && networkInfo.isConnected()) {
-            final EarthQuakeAsyncTask job = new EarthQuakeAsyncTask();
-            job.execute(uriBuilder.toString());
-        }else{
-            loading.setVisibility(View.GONE);
-            swipe.setRefreshing(false);
-            //test data
-            emptyTxt.setText(R.string.no_internet);
-            emptyTxtDesc.setText(R.string.no_internet_desc);
-            emptyImg.setImageResource(R.drawable.no_network);
-            earthquakeListView.setEmptyView(emptyState);
-        }
-    }
-
-
-    private class EarthQuakeAsyncTask extends AsyncTask<String,Void,ArrayList<Earthquakes>>{
-        @Override
-        protected ArrayList<Earthquakes> doInBackground(String... apiEndPoint) {
-           return QueryUtils.backgroundWork(apiEndPoint[0]);
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Earthquakes> earthquakes) {
-         if(earthquakes == null){
-             //removes the Progress bar when no data returns from the api
-             loading = findViewById(R.id.progress_bar);
-
-             loading.setVisibility(View.GONE);
-             //stops the Swipe-refreshing loading
-             swipe = findViewById(R.id.swipe_down);
-             swipe.setRefreshing(false);
-             //sets the Textview for the empty state
-             earthquakeListView = findViewById(R.id.list);
-             //empty state views
-             emptyState = findViewById(R.id.new_empty_test);
-             emptyImg = findViewById(R.id.empty_img);
-             emptyTxt = findViewById(R.id.empty_txt);
-             emptyTxtDesc = findViewById(R.id.empty_txt_desc);
-
-             emptyTxt.setText(R.string.no_quake);
-             emptyTxtDesc.setText(R.string.no_quake_desc);
-             emptyImg.setImageResource(R.drawable.no_event);
-
-             earthquakeListView.setEmptyView(emptyState);
-             return;
-            }
-            updateUI(earthquakes);
-
-        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        startBackgroundThread();
+    protected void onStart() {
+        super.onStart();
+        //Re-Sync Datasource
+        earthquakeViewModel.syncDataSource();
     }
 
-    public void darkMode(){
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sharedPrefs.unregisterOnSharedPreferenceChangeListener(spListen);
     }
-
 }
