@@ -1,4 +1,4 @@
-package com.example.quakereport.Network;
+package com.example.quakereport.data.network;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

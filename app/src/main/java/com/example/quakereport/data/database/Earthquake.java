@@ -1,12 +1,12 @@
-package com.example.quakereport.Database;
+package com.example.quakereport.data.database;
 
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "quake_data", indices = {@Index(value = {"eventId"}, unique = true)})
-public class QuakeData {
+@Entity(tableName = "earthquake", indices = {@Index(value = {"eventId"}, unique = true)})
+public class Earthquake {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -19,7 +19,7 @@ public class QuakeData {
 
     private long time;
 
-    public QuakeData(int id, String eventId, double magnitude, String place, long time) {
+    public Earthquake(int id, String eventId, double magnitude, String place, long time) {
         this.id = id;
         this.eventId = eventId;
         this.magnitude = magnitude;
@@ -28,7 +28,7 @@ public class QuakeData {
     }
 
     @Ignore
-    public QuakeData(String eventId, double magnitude, String place, long time) {
+    public Earthquake(String eventId, double magnitude, String place, long time) {
         this.eventId = eventId;
         this.magnitude = magnitude;
         this.place = place;
