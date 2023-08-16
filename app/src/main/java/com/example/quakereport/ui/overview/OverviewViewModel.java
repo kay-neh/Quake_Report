@@ -1,4 +1,4 @@
-package com.example.quakereport;
+package com.example.quakereport.ui.overview;
 
 import android.app.Application;
 
@@ -6,28 +6,29 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.example.quakereport.Database.QuakeData;
+import com.example.quakereport.data.database.Earthquake;
+import com.example.quakereport.data.EarthquakeRepository;
 
 import java.util.List;
 
-public class EarthquakeViewModel extends AndroidViewModel {
+public class OverviewViewModel extends AndroidViewModel {
+    private final EarthquakeRepository earthquakeRepository;
 
-    private EarthquakeRepository earthquakeRepository;
-
-    public EarthquakeViewModel(@NonNull Application application) {
+    public OverviewViewModel(@NonNull Application application) {
         super(application);
         earthquakeRepository = new EarthquakeRepository(application);
+        syncDataSource();
     }
 
     public void syncDataSource() {
         earthquakeRepository.syncDataSource();
     }
 
-    public LiveData<List<QuakeData>> getAllDataEntries(String order, String limit) {
+    public LiveData<List<Earthquake>> getEarthquakes(String order, String limit){
         return earthquakeRepository.getDataSourceEntries(order, limit);
     }
 
-    public LiveData<QuakeData> getDataSourceEntryById(int id) {
+    public LiveData<Earthquake> getEarthquakeById(int id) {
         return earthquakeRepository.getDataSourceEntryById(id);
     }
 
