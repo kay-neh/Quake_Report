@@ -1,4 +1,4 @@
-package com.example.quakereport;
+package com.example.quakereport.ui.settings;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
@@ -9,6 +9,8 @@ import androidx.preference.PreferenceManager;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import com.example.quakereport.R;
 
 public class SettingsActivity extends AppCompatActivity {
 
