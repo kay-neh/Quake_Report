@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import com.example.quakereport.data.EarthquakeRepository;
+import com.example.quakereport.data.database.EarthquakeDatabase;
 
 import java.util.List;
 
@@ -15,7 +16,8 @@ public class OverviewViewModel extends AndroidViewModel {
 
     public OverviewViewModel(@NonNull Application application) {
         super(application);
-        earthquakeRepository = new EarthquakeRepository(application);
+        EarthquakeDatabase database = EarthquakeDatabase.getDatabase(application);
+        earthquakeRepository = new EarthquakeRepository(database);
         refreshDataSource();
     }
 

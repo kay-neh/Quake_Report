@@ -27,23 +27,23 @@ import retrofit2.Response;
 
 public class EarthquakeRepository {
 
-    private final EarthquakeDatabaseDao databaseDao;
+    private final EarthquakeDatabase database;
 
-    public EarthquakeRepository(Application application) {
-        this.databaseDao = EarthquakeDatabase.getDatabase(application).quakeDao();
+    public EarthquakeRepository(EarthquakeDatabase database) {
+        this.database = database;
     }
 
     //Get all entries from datasource
     public LiveData<List<OverviewUIState>> getDataSourceEntries(String order, String limit) {
         String statement = "SELECT * FROM earthquake ORDER BY " + order + " LIMIT " + limit;
         SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
-        LiveData<List<Earthquake>> f = databaseDao.getAllQuakes(query);
+        LiveData<List<Earthquake>> f = database.quakeDao().getAllQuakes(query);
         return Transformations.map(f,g->asUIModelList(g));
     }
 
     //Get single entry
     public LiveData<OverviewUIState> getDataSourceEntryById(int id) {
-        LiveData<Earthquake> f = databaseDao.getSingleQuakeData(id);
+        LiveData<Earthquake> f = database.quakeDao().getSingleQuakeData(id);
         return Transformations.map(f,g->asUIModel(g));
     }
 
@@ -64,7 +64,7 @@ public class EarthquakeRepository {
         EarthquakeDatabase.databaseWriteExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                databaseDao.insertAllQuakes(earthquakeList);
+                database.quakeDao().insertAllQuakes(earthquakeList);
             }
         });
     }
@@ -74,7 +74,27 @@ public class EarthquakeRepository {
         EarthquakeDatabase.databaseWriteExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                databaseDao.deleteAll();
+                database.quakeDao().deleteAll();
+            }
+        });
+    }
+
+    //Sync data periodically
+    public void syncData(){
+        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
+        Call<EarthquakeProperty> call = service.getAllEarthquakes();
+        call.enqueue(new Callback<EarthquakeProperty>() {
+            @Override
+            public void onResponse(Call<EarthquakeProperty> call, Response<EarthquakeProperty> response) {
+                if (response.body() != null) {
+                    deleteLocalData();
+                    insertAllData(response.body().asDatabaseModel());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<EarthquakeProperty> call, Throwable t) {
+                Log.i("network Error response", t.toString());
             }
         });
     }
