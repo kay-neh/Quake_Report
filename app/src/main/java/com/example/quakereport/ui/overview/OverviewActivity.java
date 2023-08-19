@@ -3,7 +3,6 @@ package com.example.quakereport.ui.overview;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,14 +15,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.example.quakereport.data.database.Earthquake;
-
 import com.example.quakereport.R;
 import com.example.quakereport.databinding.ActivityOverviewBinding;
 import com.example.quakereport.ui.settings.SettingsActivity;
 import com.google.android.material.snackbar.Snackbar;
-
-import java.util.List;
 
 public class OverviewActivity extends AppCompatActivity {
 
@@ -73,10 +68,9 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     public void swipeDownAction(){
-        //Consider replacing this with WorkManager
         binding.swipeDown.setOnRefreshListener(() -> {
             binding.newEmptyTest.setVisibility(View.GONE);
-            overviewViewModel.syncDataSource();
+            overviewViewModel.refreshDataSource();
             binding.swipeDown.setRefreshing(false);
             Snackbar.make(binding.swipeDown, "Sync Successful", Snackbar.LENGTH_SHORT)
 //                    .setAction("Retry", new View.OnClickListener() {
@@ -108,11 +102,12 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     public void loadEarthquakes(String orderBy, String limit) {
-        overviewViewModel.getEarthquakes(orderBy, limit).observe(this, quakeData -> {
-            if (quakeData != null) {
+        overviewViewModel.getOverViewUIStateList(orderBy, limit).observe(this, overviewUIStateList -> {
+            if (overviewUIStateList != null) {
                 //loading.setVisibility(View.GONE);
-                adapter.submitList(quakeData);
-                if (!quakeData.isEmpty()) {
+                Log.i("StateList", String.valueOf(overviewUIStateList.size()));
+                adapter.submitList(overviewUIStateList);
+                if (!overviewUIStateList.isEmpty()) {
                     // emptyView.setVisibility(View.VISIBLE);
                     binding.progressBar.setVisibility(View.GONE);
                 }

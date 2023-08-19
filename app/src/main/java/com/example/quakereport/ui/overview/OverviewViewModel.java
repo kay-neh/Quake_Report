@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.example.quakereport.data.database.Earthquake;
 import com.example.quakereport.data.EarthquakeRepository;
 
 import java.util.List;
@@ -17,18 +16,18 @@ public class OverviewViewModel extends AndroidViewModel {
     public OverviewViewModel(@NonNull Application application) {
         super(application);
         earthquakeRepository = new EarthquakeRepository(application);
-        syncDataSource();
+        refreshDataSource();
     }
 
-    public void syncDataSource() {
-        earthquakeRepository.syncDataSource();
+    public void refreshDataSource() {
+        earthquakeRepository.refreshDataSource();
     }
 
-    public LiveData<List<Earthquake>> getEarthquakes(String order, String limit){
+    public LiveData<List<OverviewUIState>> getOverViewUIStateList(String order, String limit){
         return earthquakeRepository.getDataSourceEntries(order, limit);
     }
 
-    public LiveData<Earthquake> getEarthquakeById(int id) {
+    public LiveData<OverviewUIState> getOverViewUIStateById(int id) {
         return earthquakeRepository.getDataSourceEntryById(id);
     }
 

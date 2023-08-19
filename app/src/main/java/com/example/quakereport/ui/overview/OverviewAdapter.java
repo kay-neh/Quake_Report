@@ -8,13 +8,12 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.quakereport.data.database.Earthquake;
 import com.example.quakereport.databinding.ListViewItemBinding;
 
 import java.util.Objects;
 
 
-public class OverviewAdapter extends ListAdapter<Earthquake, OverviewAdapter.OverviewAdapterViewHolder> {
+public class OverviewAdapter extends ListAdapter<OverviewUIState, OverviewAdapter.OverviewAdapterViewHolder> {
 
     final private ListItemClickListener mOnclickListener;
 
@@ -36,8 +35,8 @@ public class OverviewAdapter extends ListAdapter<Earthquake, OverviewAdapter.Ove
             this.binding = binding;
         }
 
-        private void bind(Earthquake earthquake){
-            binding.setEarthquake(earthquake);
+        private void bind(OverviewUIState overviewUIState){
+            binding.setOverviewuistate(overviewUIState);
             binding.executePendingBindings();
         }
     }
@@ -50,22 +49,22 @@ public class OverviewAdapter extends ListAdapter<Earthquake, OverviewAdapter.Ove
 
     @Override
     public void onBindViewHolder(@NonNull OverviewAdapterViewHolder holder, int position) {
-        Earthquake earthquake = getItem(position);
-        holder.bind(earthquake);
-        holder.itemView.setOnClickListener(v -> mOnclickListener.onListItemClick(earthquake.getEventId()));
+        OverviewUIState overviewUIState = getItem(position);
+        holder.bind(overviewUIState);
+        holder.itemView.setOnClickListener(v -> mOnclickListener.onListItemClick(overviewUIState.getEventId()));
 
     }
 }
 
-class DiffUtilImpl extends DiffUtil.ItemCallback<Earthquake>{
+class DiffUtilImpl extends DiffUtil.ItemCallback<OverviewUIState>{
 
     @Override
-    public boolean areItemsTheSame(@NonNull Earthquake oldItem, @NonNull Earthquake newItem) {
+    public boolean areItemsTheSame(@NonNull OverviewUIState oldItem, @NonNull OverviewUIState newItem) {
         return Objects.equals(oldItem.getEventId(), newItem.getEventId());
     }
 
     @Override
-    public boolean areContentsTheSame(@NonNull Earthquake oldItem, @NonNull Earthquake newItem) {
+    public boolean areContentsTheSame(@NonNull OverviewUIState oldItem, @NonNull OverviewUIState newItem) {
         return Objects.equals(oldItem, newItem);
     }
 }

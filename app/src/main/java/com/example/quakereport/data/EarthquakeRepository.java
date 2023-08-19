@@ -4,6 +4,8 @@ import android.app.Application;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
 
@@ -13,9 +15,11 @@ import com.example.quakereport.data.database.EarthquakeDatabaseDao;
 import com.example.quakereport.data.network.EarthquakeProperty;
 import com.example.quakereport.data.network.GetEarthquakes;
 import com.example.quakereport.data.network.RetrofitClient;
+import com.example.quakereport.ui.overview.OverviewUIState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -23,37 +27,44 @@ import retrofit2.Response;
 
 public class EarthquakeRepository {
 
-    private final EarthquakeDatabaseDao earthquakeDatabaseDao;
+    private final EarthquakeDatabaseDao databaseDao;
 
     public EarthquakeRepository(Application application) {
-        EarthquakeDatabase earthquakeDatabase = EarthquakeDatabase.getDatabase(application);
-        earthquakeDatabaseDao = earthquakeDatabase.quakeDao();
+        this.databaseDao = EarthquakeDatabase.getDatabase(application).quakeDao();
     }
 
     //Get all entries from datasource
-    public LiveData<List<Earthquake>> getDataSourceEntries(String order, String limit) {
+    public LiveData<List<OverviewUIState>> getDataSourceEntries(String order, String limit) {
         String statement = "SELECT * FROM earthquake ORDER BY " + order + " LIMIT " + limit;
         SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
-        return earthquakeDatabaseDao.getAllQuakes(query);
+        LiveData<List<Earthquake>> f = databaseDao.getAllQuakes(query);
+        return Transformations.map(f,g->asUIModelList(g));
     }
+
     //Get single entry
-
-    public LiveData<Earthquake> getDataSourceEntryById(int id) {
-        return earthquakeDatabaseDao.getSingleQuakeData(id);
+    public LiveData<OverviewUIState> getDataSourceEntryById(int id) {
+        LiveData<Earthquake> f = databaseDao.getSingleQuakeData(id);
+        return Transformations.map(f,g->asUIModel(g));
     }
 
-    //Update local data entry with remote
-    private void updateDataSource(List<Earthquake> data) {
-        //deleteLocalData();
-        insertAllData(data);
+    public OverviewUIState asUIModel(Earthquake earthquake){
+        return new OverviewUIState(earthquake.getEventId(), earthquake.getMagnitude(), earthquake.getPlace(), earthquake.getTime());
+    }
+
+    private List<OverviewUIState> asUIModelList(List<Earthquake> earthquakeList){
+        List<OverviewUIState> overviewUIStateList = new ArrayList<>();
+        for(Earthquake e: earthquakeList){
+            overviewUIStateList.add(asUIModel(e));
+        }
+        return overviewUIStateList;
     }
 
     //Insert all operation
-    private void insertAllData(final List<Earthquake> quakeData) {
+    private void insertAllData(final List<Earthquake> earthquakeList) {
         EarthquakeDatabase.databaseWriteExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                earthquakeDatabaseDao.insertAllQuakes(quakeData);
+                databaseDao.insertAllQuakes(earthquakeList);
             }
         });
     }
@@ -63,27 +74,20 @@ public class EarthquakeRepository {
         EarthquakeDatabase.databaseWriteExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                earthquakeDatabaseDao.deleteAll();
+                databaseDao.deleteAll();
             }
         });
     }
 
     // Get network Data
-    public void syncDataSource(){
+    public void refreshDataSource(){
         GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
         Call<EarthquakeProperty> call = service.getAllEarthquakes();
-        List<Earthquake> data = new ArrayList<>();
         call.enqueue(new Callback<EarthquakeProperty>() {
             @Override
             public void onResponse(Call<EarthquakeProperty> call, Response<EarthquakeProperty> response) {
                 if (response.body() != null) {
-                    for (int i = 0; i < response.body().getFeatures().size(); i++) {
-                        data.add(new Earthquake(response.body().getFeatures().get(i).getProperties().getEventId(),
-                                response.body().getFeatures().get(i).getProperties().getMagnitude(),
-                                response.body().getFeatures().get(i).getProperties().getPlace(),
-                                response.body().getFeatures().get(i).getProperties().getTime()));
-                    }
-                    updateDataSource(data);
+                    insertAllData(response.body().asDatabaseModel());
                 }
             }
 

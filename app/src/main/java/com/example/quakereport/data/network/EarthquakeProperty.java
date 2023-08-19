@@ -1,7 +1,9 @@
 package com.example.quakereport.data.network;
 
+import com.example.quakereport.data.database.Earthquake;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EarthquakeProperty {
@@ -17,6 +19,18 @@ public class EarthquakeProperty {
         this.features = features;
     }
 
+
+    // Method for parsing Network DTO to Database DTO
+    public List<Earthquake> asDatabaseModel(){
+        List<Earthquake> earthquakeList = new ArrayList<>();
+        for (int i = 0; i < features.size(); i++) {
+            earthquakeList.add(new Earthquake(features.get(i).getProperties().getEventId(),
+                    features.get(i).getProperties().getMagnitude(),
+                    features.get(i).getProperties().getPlace(),
+                    features.get(i).getProperties().getTime()));
+        }
+        return earthquakeList;
+    }
 
 
     // Features are contained in EarthquakeProperty
