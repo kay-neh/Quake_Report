@@ -11,23 +11,23 @@ import java.util.Date;
 public class BindingAdapter {
 
     @androidx.databinding.BindingAdapter("bindMagnitude")
-    public static void bindMagnitude(TextView textView, Earthquake earthquake) {
-        if(earthquake != null){
+    public static void bindMagnitude(TextView textView, OverviewUIState overviewUIState) {
+        if(overviewUIState != null){
             //Magnitude and circle background
-            textView.setText(Utils.formatMagnitude(earthquake.getMagnitude()));
+            textView.setText(Utils.formatMagnitude(overviewUIState.getMagnitude()));
             GradientDrawable magnitudeCircle = (GradientDrawable) textView.getBackground();
             // Get the appropriate background color based on the current earthquake magnitude
-            int magnitudeColor = Utils.getMagnitudeColor(textView.getContext(), earthquake.getMagnitude());
+            int magnitudeColor = Utils.getMagnitudeColor(textView.getContext(), overviewUIState.getMagnitude());
             // Set the color on the magnitude circle
             magnitudeCircle.setColor(magnitudeColor);
         }
     }
 
     @androidx.databinding.BindingAdapter("bindLocationOffset")
-    public static void bindLocationOffset(TextView textView, Earthquake earthquake){
-        if(earthquake != null){
+    public static void bindLocationOffset(TextView textView, OverviewUIState overviewUIState){
+        if(overviewUIState != null){
             //Location
-            String locale = earthquake.getPlace();
+            String locale = overviewUIState.getPlace();
             if(locale != null){
                 if (locale.contains("of")) {
                     String[] location = locale.split("(?<=of )");
@@ -41,10 +41,10 @@ public class BindingAdapter {
     }
 
     @androidx.databinding.BindingAdapter("bindPrimaryLocation")
-    public static void bindPrimaryLocation(TextView textView, Earthquake earthquake){
-        if(earthquake != null){
+    public static void bindPrimaryLocation(TextView textView, OverviewUIState overviewUIState){
+        if(overviewUIState != null){
             //Location
-            String locale = earthquake.getPlace();
+            String locale = overviewUIState.getPlace();
             if(locale != null){
                 if (locale.contains("of")) {
                     String[] location = locale.split("(?<=of )");
@@ -57,17 +57,17 @@ public class BindingAdapter {
     }
 
     @androidx.databinding.BindingAdapter("bindDate")
-    public static void bindDate(TextView textView, Earthquake earthquake){
-        if(earthquake != null){
-            Date dateObject = new Date(earthquake.getTime());
+    public static void bindDate(TextView textView, OverviewUIState overviewUIState){
+        if(overviewUIState != null){
+            Date dateObject = new Date(overviewUIState.getTime());
             textView.setText(Utils.formatDate(dateObject));
         }
     }
 
     @androidx.databinding.BindingAdapter("bindTime")
-    public static void bindTime(TextView textView, Earthquake earthquake){
-        if(earthquake != null){
-            Date dateObject = new Date(earthquake.getTime());
+    public static void bindTime(TextView textView, OverviewUIState overviewUIState){
+        if(overviewUIState != null){
+            Date dateObject = new Date(overviewUIState.getTime());
             textView.setText(Utils.formatTime(dateObject));
         }
     }

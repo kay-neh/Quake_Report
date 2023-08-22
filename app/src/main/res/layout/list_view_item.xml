@@ -5,8 +5,8 @@
 
     <data>
         <variable
-            name="earthquake"
-            type="com.example.quakereport.data.database.Earthquake" />
+            name="overviewuistate"
+            type="com.example.quakereport.ui.overview.OverviewUIState" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -25,7 +25,7 @@
             android:gravity="center"
             android:textColor="@android:color/white"
             android:textSize="16sp"
-            app:bindMagnitude="@{earthquake}"
+            app:bindMagnitude="@{overviewuistate}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -42,7 +42,7 @@
             android:textAlignment="textStart"
             android:textColor="@color/textColorEarthquakeDetails"
             android:textSize="12sp"
-            app:bindLocationOffset="@{earthquake}"
+            app:bindLocationOffset="@{overviewuistate}"
             app:layout_constraintBottom_toTopOf="@+id/primary_location"
             app:layout_constraintStart_toEndOf="@+id/magnitude"
             app:layout_constraintTop_toTopOf="parent"
@@ -58,7 +58,7 @@
             android:textAlignment="textStart"
             android:textColor="@color/textColorEarthquake"
             android:textSize="16sp"
-            app:bindPrimaryLocation="@{earthquake}"
+            app:bindPrimaryLocation="@{overviewuistate}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/magnitude"
             app:layout_constraintTop_toBottomOf="@+id/location_offset"
@@ -75,7 +75,7 @@
             android:textAlignment="textEnd"
             android:textColor="@color/textColorEarthquakeDetails"
             android:textSize="12sp"
-            app:bindDate="@{earthquake}"
+            app:bindDate="@{overviewuistate}"
             app:layout_constraintBottom_toTopOf="@+id/time"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
@@ -94,7 +94,7 @@
             android:textAlignment="textEnd"
             android:textColor="@color/textColorEarthquakeDetails"
             android:textSize="12sp"
-            app:bindTime="@{earthquake}"
+            app:bindTime="@{overviewuistate}"
             app:layout_constraintBottom_toTopOf="@+id/imageView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
