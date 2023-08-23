@@ -27,9 +27,9 @@ public class QuakeReportApplication extends Application {
 //        }
 
         Constraints constraints = new Constraints.Builder()
-                //.setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiredNetworkType(NetworkType.UNMETERED)
                 .setRequiresBatteryNotLow(true)
-               // .setRequiresCharging(true)
+                .setRequiresCharging(true)
               //  .setRequiresDeviceIdle(idle)
                 .build();
 
