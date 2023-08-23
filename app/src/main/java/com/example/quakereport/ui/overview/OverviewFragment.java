@@ -1,37 +1,65 @@
 package com.example.quakereport.ui.overview;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.view.MenuHost;
+import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.example.quakereport.R;
-import com.example.quakereport.databinding.ActivityOverviewBinding;
-import com.example.quakereport.ui.settings.SettingsActivity;
+import com.example.quakereport.databinding.FragmentOverviewBinding;
 import com.google.android.material.snackbar.Snackbar;
 
-public class OverviewActivity extends AppCompatActivity {
 
-    ActivityOverviewBinding binding;
+public class OverviewFragment extends Fragment {
+
+    FragmentOverviewBinding binding;
+
     OverviewAdapter adapter;
     SharedPreferences sharedPrefs;
     SharedPreferences.OnSharedPreferenceChangeListener spListen;
     OverviewViewModel overviewViewModel;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this,R.layout.activity_overview);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        binding = DataBindingUtil.inflate(inflater,R.layout.fragment_overview,container,false);
+
+        //Inflating menus
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.settings_menu, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment);
+                return NavigationUI.onNavDestinationSelected(menuItem, navController);
+            }
+
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         //Init viewModel
         overviewViewModel = new ViewModelProvider(this).get(OverviewViewModel.class);
@@ -43,26 +71,31 @@ public class OverviewActivity extends AppCompatActivity {
         swipeDownAction();
 
         //Init sharedPreference, get list and register listener
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         setNightModeWithPreference();
-        loadEarthquakes(sharedPrefs.getString(
-                        getString(R.string.settings_order_by_key),
-                        getString(R.string.settings_order_by_default)),
-                sharedPrefs.getString(
-                        getString(R.string.settings_limit_key),
-                        getString(R.string.settings_limit_default)));
+        overviewViewModel.overviewUIStateList.observe(getViewLifecycleOwner(), overviewUIStateList -> {
+            if (overviewUIStateList != null) {
+                Log.i("StateList", String.valueOf(overviewUIStateList.size()));
+                adapter.submitList(overviewUIStateList);
+                if (!overviewUIStateList.isEmpty()) {
+                    binding.progressBar.setVisibility(View.GONE);
+                }
+            }
+        });
         setPreferenceListener();
         sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
 
+        return binding.getRoot();
     }
 
-
     public void initAdapter() {
-        LinearLayoutManager llm = new LinearLayoutManager(this);
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
         binding.list.setLayoutManager(llm);
-        adapter = new OverviewAdapter(eventId -> {
+        adapter = new OverviewAdapter((view, eventId) ->{
             //handle click events here
             Log.i("Adapter Clicked",eventId);
+            NavController navController = Navigation.findNavController(view);
+            navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment());
         });
         binding.list.setAdapter(adapter);
     }
@@ -73,15 +106,8 @@ public class OverviewActivity extends AppCompatActivity {
             overviewViewModel.refreshDataSource();
             binding.swipeDown.setRefreshing(false);
             Snackbar.make(binding.swipeDown, "Sync Successful", Snackbar.LENGTH_SHORT)
-//                    .setAction("Retry", new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            updateRoomDb(context, swipe);
-//                        }
-//                    })
-//                    .setActionTextColor(getColor(R.color.colorAccent))
-                    .setBackgroundTint(getColor(R.color.snackBarColor))
-                    .setTextColor(getColor(R.color.snackBarTextColor))
+                    .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
+                    .setTextColor(getContext().getColor(R.color.snackBarTextColor))
                     .show();
         });
     }
@@ -101,32 +127,18 @@ public class OverviewActivity extends AppCompatActivity {
         }
     }
 
-    public void loadEarthquakes(String orderBy, String limit) {
-        overviewViewModel.getOverViewUIStateList(orderBy, limit).observe(this, overviewUIStateList -> {
-            if (overviewUIStateList != null) {
-                //loading.setVisibility(View.GONE);
-                Log.i("StateList", String.valueOf(overviewUIStateList.size()));
-                adapter.submitList(overviewUIStateList);
-                if (!overviewUIStateList.isEmpty()) {
-                    // emptyView.setVisibility(View.VISIBLE);
-                    binding.progressBar.setVisibility(View.GONE);
-                }
-            }
-        });
-    }
-
     public void setPreferenceListener(){
         //Set up OnSharedPrefChange listener object
         spListen = (sharedPreferences, key) -> {
             if (key.equals(getString(R.string.settings_order_by_key))) {
-                loadEarthquakes(sharedPreferences.getString(key, getString(R.string.settings_order_by_default))
+                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(key, getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(
                                 getString(R.string.settings_limit_key),
                                 getString(R.string.settings_limit_default)));
             }
             if (key.equals(getString(R.string.settings_limit_key))) {
-                loadEarthquakes(sharedPreferences.getString(getString(R.string.settings_order_by_key),
+                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(getString(R.string.settings_order_by_key),
                                 getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(key, getString(R.string.settings_limit_default)));
@@ -138,24 +150,7 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
-            startActivity(settingsIntent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
         sharedPrefs.unregisterOnSharedPreferenceChangeListener(spListen);
     }

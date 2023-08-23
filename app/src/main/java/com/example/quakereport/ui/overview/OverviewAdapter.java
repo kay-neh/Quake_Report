@@ -1,6 +1,7 @@
 package com.example.quakereport.ui.overview;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -24,7 +25,7 @@ public class OverviewAdapter extends ListAdapter<OverviewUIState, OverviewAdapte
 
 
     public interface ListItemClickListener {
-        void onListItemClick(String eventId);
+        void onListItemClick(View view, String eventId);
     }
 
      static class OverviewAdapterViewHolder extends RecyclerView.ViewHolder {
@@ -51,7 +52,7 @@ public class OverviewAdapter extends ListAdapter<OverviewUIState, OverviewAdapte
     public void onBindViewHolder(@NonNull OverviewAdapterViewHolder holder, int position) {
         OverviewUIState overviewUIState = getItem(position);
         holder.bind(overviewUIState);
-        holder.itemView.setOnClickListener(v -> mOnclickListener.onListItemClick(overviewUIState.getEventId()));
+        holder.itemView.setOnClickListener(view -> mOnclickListener.onListItemClick(view,overviewUIState.getEventId()));
 
     }
 }
