@@ -43,11 +43,19 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment:2.5.0"
     implementation "androidx.navigation:navigation-ui:2.5.0"
 
+    // RxJava3 support
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.5'
+
     // Retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.8.1'
-    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    // RxJava3 support for Retrofit
+    implementation 'com.squareup.retrofit2:adapter-rxjava3:2.9.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.7.0'
 
     // Room components
+    // RxJava3 support for Room
+    implementation "androidx.room:room-rxjava3:$roomVersion"
     implementation "androidx.room:room-runtime:$roomVersion"
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
     androidTestImplementation "androidx.room:room-testing:$roomVersion"

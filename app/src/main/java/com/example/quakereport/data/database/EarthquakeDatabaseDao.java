@@ -10,6 +10,8 @@ import androidx.sqlite.db.SupportSQLiteQuery;
 
 import java.util.List;
 
+import io.reactivex.rxjava3.core.Completable;
+
 @Dao
 public interface EarthquakeDatabaseDao {
 
@@ -23,9 +25,9 @@ public interface EarthquakeDatabaseDao {
 
     //Insert all operation
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAllQuakes(List<Earthquake> earthquakeList);
+    Completable insertAllQuakes(List<Earthquake> earthquakeList);
 
     //Delete all operation
     @Query("DELETE FROM earthquake")
-    void deleteAll();
+    Completable deleteAll();
 }
