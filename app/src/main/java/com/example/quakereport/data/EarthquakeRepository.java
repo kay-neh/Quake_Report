@@ -1,17 +1,14 @@
 package com.example.quakereport.data;
 
-import android.app.Application;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
 
 import com.example.quakereport.data.database.Earthquake;
 import com.example.quakereport.data.database.EarthquakeDatabase;
-import com.example.quakereport.data.database.EarthquakeDatabaseDao;
 import com.example.quakereport.data.network.EarthquakeProperty;
 import com.example.quakereport.data.network.GetEarthquakes;
 import com.example.quakereport.data.network.RetrofitClient;
@@ -19,8 +16,14 @@ import com.example.quakereport.ui.overview.OverviewUIState;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,7 +50,7 @@ public class EarthquakeRepository {
         return Transformations.map(f,g->asUIModel(g));
     }
 
-    public OverviewUIState asUIModel(Earthquake earthquake){
+    private OverviewUIState asUIModel(Earthquake earthquake){
         return new OverviewUIState(earthquake.getEventId(), earthquake.getMagnitude(), earthquake.getPlace(), earthquake.getTime());
     }
 
@@ -61,61 +64,77 @@ public class EarthquakeRepository {
 
     //Insert all operation
     private void insertAllData(final List<Earthquake> earthquakeList) {
-        EarthquakeDatabase.databaseWriteExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                database.quakeDao().insertAllQuakes(earthquakeList);
-            }
-        });
+        database.quakeDao().insertAllQuakes(earthquakeList)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe();
     }
 
     //Delete operation
     private void deleteLocalData() {
-        EarthquakeDatabase.databaseWriteExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                database.quakeDao().deleteAll();
-            }
-        });
+        database.quakeDao().deleteAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe();
+    }
+
+    // Gets the Network DTO as an Observable
+    private Observable<EarthquakeProperty> getObservable(){
+        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
+        Observable<EarthquakeProperty> observable = service.getAllEarthquakes();
+        return observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     //Sync data periodically
     public void syncData(){
-        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
-        Call<EarthquakeProperty> call = service.getAllEarthquakes();
-        call.enqueue(new Callback<EarthquakeProperty>() {
+        getObservable().subscribe(new Observer<EarthquakeProperty>() {
             @Override
-            public void onResponse(Call<EarthquakeProperty> call, Response<EarthquakeProperty> response) {
-                if (response.body() != null) {
-                    deleteLocalData();
-                    insertAllData(response.body().asDatabaseModel());
-                }
+            public void onSubscribe(@NonNull Disposable d) {
+
             }
 
             @Override
-            public void onFailure(Call<EarthquakeProperty> call, Throwable t) {
-                Log.i("network Error response", t.toString());
+            public void onNext(@NonNull EarthquakeProperty earthquakeProperty) {
+                deleteLocalData();
+                insertAllData(earthquakeProperty.asDatabaseModel());
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                Log.i("network Error response", e.toString());
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
     }
 
-    // Get network Data
+    // Refresh Data
     public void refreshDataSource(){
-        GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
-        Call<EarthquakeProperty> call = service.getAllEarthquakes();
-        call.enqueue(new Callback<EarthquakeProperty>() {
-            @Override
-            public void onResponse(Call<EarthquakeProperty> call, Response<EarthquakeProperty> response) {
-                if (response.body() != null) {
-                    insertAllData(response.body().asDatabaseModel());
-                }
-            }
+        getObservable().subscribe(new Observer<EarthquakeProperty>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
 
-            @Override
-            public void onFailure(Call<EarthquakeProperty> call, Throwable t) {
-                Log.i("network Error response", t.toString());
-            }
-        });
+                    }
+
+                    @Override
+                    public void onNext(@NonNull EarthquakeProperty earthquakeProperty) {
+                        insertAllData(earthquakeProperty.asDatabaseModel());
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        Log.i("network Error response", e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
 }

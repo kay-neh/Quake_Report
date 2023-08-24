@@ -16,8 +16,6 @@ public abstract class EarthquakeDatabase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "quake_database";
     private static volatile EarthquakeDatabase INSTANCE;
-    private static final int NO_OF_THREADS = 4;
-    public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(NO_OF_THREADS);
 
     public static EarthquakeDatabase getDatabase(Context context) {
         if (INSTANCE == null) {
