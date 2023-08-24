@@ -32,7 +32,6 @@ import com.google.android.material.snackbar.Snackbar;
 public class OverviewFragment extends Fragment {
 
     FragmentOverviewBinding binding;
-
     OverviewAdapter adapter;
     SharedPreferences sharedPrefs;
     SharedPreferences.OnSharedPreferenceChangeListener spListen;
@@ -115,7 +114,7 @@ public class OverviewFragment extends Fragment {
         //Set Night mode
         setNightMode(sharedPrefs.getBoolean(
                 getString(R.string.settings_dark_mode_key),
-                getResources().getBoolean(R.bool.settings_dark_mode_defult)));
+                getResources().getBoolean(R.bool.settings_dark_mode_default)));
     }
 
     public void setNightMode(Boolean nightValue) {
@@ -129,21 +128,21 @@ public class OverviewFragment extends Fragment {
     public void setPreferenceListener(){
         //Set up OnSharedPrefChange listener object
         spListen = (sharedPreferences, key) -> {
-            if (key.equals(getString(R.string.settings_order_by_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(key, getString(R.string.settings_order_by_default))
+            if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
+                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(
-                                getString(R.string.settings_limit_key),
-                                getString(R.string.settings_limit_default)));
+                                getContext().getString(R.string.settings_limit_key),
+                                getContext().getString(R.string.settings_limit_default)));
             }
             if (key.equals(getString(R.string.settings_limit_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(getString(R.string.settings_order_by_key),
-                                getString(R.string.settings_order_by_default))
+                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
+                                getContext().getString(R.string.settings_order_by_default))
                         ,
-                        sharedPreferences.getString(key, getString(R.string.settings_limit_default)));
+                        sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
             }
-            if (key.equals(getString(R.string.settings_dark_mode_key))) {
-                setNightMode(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.settings_dark_mode_defult)));
+            if (key.equals(getContext().getString(R.string.settings_dark_mode_key))) {
+                setNightMode(sharedPreferences.getBoolean(key, getContext().getResources().getBoolean(R.bool.settings_dark_mode_default)));
             }
         };
     }
