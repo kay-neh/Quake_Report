@@ -2,6 +2,7 @@ package com.example.quakereport.ui.settings;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
@@ -28,6 +29,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
+        Toast error = Toast.makeText(getContext(), "Please enter a valid number", Toast.LENGTH_SHORT);
         String stringValue = newValue.toString();
         //For ListPreference
         if (preference instanceof ListPreference) {
@@ -40,6 +42,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
         //For EditText Preference
         else if (preference instanceof EditTextPreference) {
+            try {
+                int limit = Integer.parseInt(stringValue);
+                if (limit <= 0) {
+                    error.show();
+                    return false;
+                }
+            } catch (NumberFormatException nfe) {
+                error.show();
+                return false;
+            }
             preference.setSummary(stringValue);
         }
         return true;

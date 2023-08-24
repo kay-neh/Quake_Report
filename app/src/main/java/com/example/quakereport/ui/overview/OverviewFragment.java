@@ -29,7 +29,6 @@ import com.example.quakereport.R;
 import com.example.quakereport.databinding.FragmentOverviewBinding;
 import com.google.android.material.snackbar.Snackbar;
 
-
 public class OverviewFragment extends Fragment {
 
     FragmentOverviewBinding binding;
