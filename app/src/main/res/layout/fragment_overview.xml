@@ -25,7 +25,7 @@
 
         <!--emptyview-->
         <RelativeLayout
-            android:id="@+id/new_empty_test"
+            android:id="@+id/empty_state"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -70,6 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:visibility="visible"
             android:indeterminateTint="@color/colorAccent" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -73,9 +73,9 @@ public class OverviewFragment extends Fragment {
         setNightModeWithPreference();
         overviewViewModel.overviewUIStateList.observe(getViewLifecycleOwner(), overviewUIStateList -> {
             if (overviewUIStateList != null) {
-                Log.i("StateList", String.valueOf(overviewUIStateList.size()));
+                Log.i("StateList size", String.valueOf(overviewUIStateList.size()));
                 adapter.submitList(overviewUIStateList);
-                if (!overviewUIStateList.isEmpty()) {
+                if(!overviewUIStateList.isEmpty()){
                     binding.progressBar.setVisibility(View.GONE);
                 }
             }
@@ -100,10 +100,9 @@ public class OverviewFragment extends Fragment {
 
     public void swipeDownAction(){
         binding.swipeDown.setOnRefreshListener(() -> {
-            binding.newEmptyTest.setVisibility(View.GONE);
             overviewViewModel.refreshDataSource();
             binding.swipeDown.setRefreshing(false);
-            Snackbar.make(binding.swipeDown, "Sync Successful", Snackbar.LENGTH_SHORT)
+            Snackbar.make(binding.swipeDown, "Fetching the latest updates...", Snackbar.LENGTH_SHORT)
                     .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
                     .setTextColor(getContext().getColor(R.color.snackBarTextColor))
                     .show();

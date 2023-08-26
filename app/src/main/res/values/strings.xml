@@ -35,7 +35,7 @@
     <!-- Strings For Limit [CHAR LIMIT=30] -->
     <string name="settings_limit_label">Limit</string>
     <string name="settings_limit_key" translatable="false">limit</string>
-    <string name="settings_limit_default" translatable="false">5</string>
+    <string name="settings_limit_default" translatable="false">20</string>
 
 
     <!--Handling Dark Mode -->

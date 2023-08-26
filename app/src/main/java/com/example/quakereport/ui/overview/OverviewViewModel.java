@@ -2,7 +2,6 @@ package com.example.quakereport.ui.overview;
 
 import android.app.Application;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -42,10 +41,6 @@ public class OverviewViewModel extends AndroidViewModel {
 
     public void getOverViewUIStateList(String order, String limit){
         overviewUIStateList =  earthquakeRepository.getDataSourceEntries(order, limit);
-    }
-
-    public LiveData<OverviewUIState> getOverViewUIStateById(int id) {
-        return earthquakeRepository.getDataSourceEntryById(id);
     }
 
 }
