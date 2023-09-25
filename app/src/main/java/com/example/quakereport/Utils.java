@@ -11,6 +11,19 @@ import java.util.Locale;
 
 public class Utils {
 
+    public static String getLocation(String place){
+        if(place != null) {
+            if (place.contains("of")) {
+                String[] location = place.split("(?<=of )");
+                return location[1];
+            } else {
+                return place;
+            }
+        }else {
+            return "Unknown Location";
+        }
+    }
+
     public static String formatDate(Date dateObject) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("LLL dd, yyyy", Locale.getDefault());
         return dateFormat.format(dateObject);

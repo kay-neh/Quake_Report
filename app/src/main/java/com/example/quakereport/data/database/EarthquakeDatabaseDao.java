@@ -20,8 +20,8 @@ public interface EarthquakeDatabaseDao {
     LiveData<List<Earthquake>> getAllQuakes(SupportSQLiteQuery query);
 
     //Read single operation
-    @Query("SELECT * FROM earthquake WHERE id = :id")
-    LiveData<Earthquake> getSingleQuakeData(int id);
+    @Query("SELECT * FROM earthquake WHERE eventId = :eventId")
+    LiveData<Earthquake> getSingleQuakeData(String eventId);
 
     //Insert all operation
     @Insert(onConflict = OnConflictStrategy.REPLACE)

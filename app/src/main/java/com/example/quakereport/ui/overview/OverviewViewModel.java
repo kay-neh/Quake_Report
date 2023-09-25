@@ -2,11 +2,11 @@ package com.example.quakereport.ui.overview;
 
 import android.app.Application;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
 
 import com.example.quakereport.R;
@@ -20,6 +20,9 @@ public class OverviewViewModel extends AndroidViewModel {
     SharedPreferences sharedPrefs;
     String orderFilter, limitFilter;
     LiveData<List<OverviewUIState>> overviewUIStateList;
+
+    private MutableLiveData<String[]> _navigateToEarthquakeDetails = new MutableLiveData<>();
+    LiveData<String[]> navigateToEarthquakeDetails = _navigateToEarthquakeDetails;
 
     public OverviewViewModel(@NonNull Application application) {
         super(application);
@@ -36,16 +39,20 @@ public class OverviewViewModel extends AndroidViewModel {
         getOverViewUIStateList(orderFilter,limitFilter);
     }
 
+    public void onEarthquakeClicked(String[] data){
+        _navigateToEarthquakeDetails.setValue(data);
+    }
+
+    public void onEarthquakeDetailsNavigated() {
+        _navigateToEarthquakeDetails.setValue(null);
+    }
+
     public void refreshDataSource() {
         earthquakeRepository.refreshDataSource();
     }
 
     public void getOverViewUIStateList(String order, String limit){
         overviewUIStateList =  earthquakeRepository.getDataSourceEntries(order, limit);
-    }
-
-    public LiveData<OverviewUIState> getOverViewUIStateById(int id) {
-        return earthquakeRepository.getDataSourceEntryById(id);
     }
 
 }

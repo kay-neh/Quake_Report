@@ -17,11 +17,15 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.quakereport.ui.settings.SettingsFragment"
-        android:label="@string/settings_title"
-        tools:layout="@layout/fragment_settings"/>
+        android:label="@string/settings_menu_item"
+        tools:layout="@layout/fragment_settings" />
     <fragment
         android:id="@+id/detailsFragment"
         android:name="com.example.quakereport.ui.details.DetailsFragment"
-        android:label="fragment_details"
-        tools:layout="@layout/fragment_details" />
+        android:label="detailsFragment"
+        tools:layout="@layout/fragment_details">
+        <argument
+            android:name="eventId"
+            app:argType="string[]" />
+    </fragment>
 </navigation>

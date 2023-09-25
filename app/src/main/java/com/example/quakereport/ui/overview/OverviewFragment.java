@@ -10,9 +10,11 @@ import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,7 +34,6 @@ import com.google.android.material.snackbar.Snackbar;
 public class OverviewFragment extends Fragment {
 
     FragmentOverviewBinding binding;
-
     OverviewAdapter adapter;
     SharedPreferences sharedPrefs;
     SharedPreferences.OnSharedPreferenceChangeListener spListen;
@@ -74,9 +75,9 @@ public class OverviewFragment extends Fragment {
         setNightModeWithPreference();
         overviewViewModel.overviewUIStateList.observe(getViewLifecycleOwner(), overviewUIStateList -> {
             if (overviewUIStateList != null) {
-                Log.i("StateList", String.valueOf(overviewUIStateList.size()));
+                Log.i("StateList size", String.valueOf(overviewUIStateList.size()));
                 adapter.submitList(overviewUIStateList);
-                if (!overviewUIStateList.isEmpty()) {
+                if(!overviewUIStateList.isEmpty()){
                     binding.progressBar.setVisibility(View.GONE);
                 }
             }
@@ -84,27 +85,38 @@ public class OverviewFragment extends Fragment {
         setPreferenceListener();
         sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
 
+        overviewViewModel.navigateToEarthquakeDetails.observe(this, new Observer<String[]>() {
+            @Override
+            public void onChanged(String[] data) {
+                if(data != null){
+                    NavHostFragment navHostFragment = (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+                    NavController navController = navHostFragment.getNavController();
+                    navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment(data));
+                    overviewViewModel.onEarthquakeDetailsNavigated();
+                }
+
+            }
+        });
+
         return binding.getRoot();
     }
 
     public void initAdapter() {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         binding.list.setLayoutManager(llm);
-        adapter = new OverviewAdapter((view, eventId) ->{
+        adapter = new OverviewAdapter((eventId,location) -> {
             //handle click events here
-            Log.i("Adapter Clicked",eventId);
-            NavController navController = Navigation.findNavController(view);
-            navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment());
+            String[] data = {eventId,location};
+            overviewViewModel.onEarthquakeClicked(data);
         });
         binding.list.setAdapter(adapter);
     }
 
     public void swipeDownAction(){
         binding.swipeDown.setOnRefreshListener(() -> {
-            binding.newEmptyTest.setVisibility(View.GONE);
             overviewViewModel.refreshDataSource();
             binding.swipeDown.setRefreshing(false);
-            Snackbar.make(binding.swipeDown, "Sync Successful", Snackbar.LENGTH_SHORT)
+            Snackbar.make(binding.swipeDown, "Fetching the latest updates...", Snackbar.LENGTH_SHORT)
                     .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
                     .setTextColor(getContext().getColor(R.color.snackBarTextColor))
                     .show();
@@ -115,7 +127,7 @@ public class OverviewFragment extends Fragment {
         //Set Night mode
         setNightMode(sharedPrefs.getBoolean(
                 getString(R.string.settings_dark_mode_key),
-                getResources().getBoolean(R.bool.settings_dark_mode_defult)));
+                getResources().getBoolean(R.bool.settings_dark_mode_default)));
     }
 
     public void setNightMode(Boolean nightValue) {
@@ -129,21 +141,21 @@ public class OverviewFragment extends Fragment {
     public void setPreferenceListener(){
         //Set up OnSharedPrefChange listener object
         spListen = (sharedPreferences, key) -> {
-            if (key.equals(getString(R.string.settings_order_by_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(key, getString(R.string.settings_order_by_default))
+            if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
+                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(
-                                getString(R.string.settings_limit_key),
-                                getString(R.string.settings_limit_default)));
+                                getContext().getString(R.string.settings_limit_key),
+                                getContext().getString(R.string.settings_limit_default)));
             }
             if (key.equals(getString(R.string.settings_limit_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(getString(R.string.settings_order_by_key),
-                                getString(R.string.settings_order_by_default))
+                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
+                                getContext().getString(R.string.settings_order_by_default))
                         ,
-                        sharedPreferences.getString(key, getString(R.string.settings_limit_default)));
+                        sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
             }
-            if (key.equals(getString(R.string.settings_dark_mode_key))) {
-                setNightMode(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.settings_dark_mode_defult)));
+            if (key.equals(getContext().getString(R.string.settings_dark_mode_key))) {
+                setNightMode(sharedPreferences.getBoolean(key, getContext().getResources().getBoolean(R.bool.settings_dark_mode_default)));
             }
         };
     }
