@@ -10,9 +10,11 @@ import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -83,17 +85,29 @@ public class OverviewFragment extends Fragment {
         setPreferenceListener();
         sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
 
+        overviewViewModel.navigateToEarthquakeDetails.observe(this, new Observer<String[]>() {
+            @Override
+            public void onChanged(String[] data) {
+                if(data != null){
+                    NavHostFragment navHostFragment = (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+                    NavController navController = navHostFragment.getNavController();
+                    navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment(data));
+                    overviewViewModel.onEarthquakeDetailsNavigated();
+                }
+
+            }
+        });
+
         return binding.getRoot();
     }
 
     public void initAdapter() {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         binding.list.setLayoutManager(llm);
-        adapter = new OverviewAdapter((view, eventId) ->{
+        adapter = new OverviewAdapter((eventId,location) -> {
             //handle click events here
-            Log.i("Adapter Clicked",eventId);
-            NavController navController = Navigation.findNavController(view);
-            navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment());
+            String[] data = {eventId,location};
+            overviewViewModel.onEarthquakeClicked(data);
         });
         binding.list.setAdapter(adapter);
     }

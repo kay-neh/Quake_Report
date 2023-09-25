@@ -19,7 +19,6 @@ public class EarthquakeProperty {
         this.features = features;
     }
 
-
     // Method for parsing Network DTO to Database DTO
     public List<Earthquake> asDatabaseModel(){
         List<Earthquake> earthquakeList = new ArrayList<>();
@@ -27,28 +26,23 @@ public class EarthquakeProperty {
             earthquakeList.add(new Earthquake(features.get(i).getProperties().getEventId(),
                     features.get(i).getProperties().getMagnitude(),
                     features.get(i).getProperties().getPlace(),
-                    features.get(i).getProperties().getTime()));
+                    features.get(i).getProperties().getTime(),
+                    features.get(i).getProperties().getUrl(),
+                    features.get(i).getGeometry().getCoordinates()[0],
+                    features.get(i).getGeometry().getCoordinates()[1],
+                    features.get(i).getGeometry().getCoordinates()[2]));
         }
         return earthquakeList;
     }
 
-
     // Features are contained in EarthquakeProperty
     public class Features {
-
-        @SerializedName("type")
-        private String type;
 
         @SerializedName("properties")
         private Properties properties;
 
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type){
-            this.type = type;
-        }
+        @SerializedName("geometry")
+        private Geometry geometry;
 
         public Properties getProperties() {
             return properties;
@@ -57,8 +51,15 @@ public class EarthquakeProperty {
         public void setProperties(Properties properties) {
             this.properties = properties;
         }
-    }
 
+        public Geometry getGeometry() {
+            return geometry;
+        }
+
+        public void setGeometry(Geometry geometry) {
+            this.geometry = geometry;
+        }
+    }
 
     // Properties are contained in Features
     public class Properties {
@@ -75,11 +76,15 @@ public class EarthquakeProperty {
         @SerializedName("time")
         private long time;
 
-        public Properties(String eventId, double magnitude, String place, long time) {
+        @SerializedName("url")
+        private String url;
+
+        public Properties(String eventId, double magnitude, String place, long time, String url) {
             this.eventId = eventId;
             this.magnitude = magnitude;
             this.place = place;
             this.time = time;
+            this.url = url;
         }
 
         public String getEventId() {
@@ -113,7 +118,34 @@ public class EarthquakeProperty {
         public void setTime(long time) {
             this.time = time;
         }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
     }
+
+    public class Geometry {
+
+        @SerializedName("coordinates")
+        private double[] coordinates;
+
+        public Geometry(double[] coordinates) {
+            this.coordinates = coordinates;
+        }
+
+        public double[] getCoordinates() {
+            return coordinates;
+        }
+
+        public void setCoordinates(double[] coordinates) {
+            this.coordinates = coordinates;
+        }
+    }
+
 
 
 }

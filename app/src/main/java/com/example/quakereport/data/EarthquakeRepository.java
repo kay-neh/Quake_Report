@@ -3,7 +3,6 @@ package com.example.quakereport.data;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
@@ -13,6 +12,7 @@ import com.example.quakereport.data.database.EarthquakeDatabase;
 import com.example.quakereport.data.network.EarthquakeProperty;
 import com.example.quakereport.data.network.GetEarthquakes;
 import com.example.quakereport.data.network.RetrofitClient;
+import com.example.quakereport.ui.details.DetailsUIState;
 import com.example.quakereport.ui.overview.OverviewUIState;
 
 import java.util.ArrayList;
@@ -38,23 +38,23 @@ public class EarthquakeRepository {
         String statement = "SELECT * FROM earthquake ORDER BY " + order + " LIMIT " + limit;
         SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
         LiveData<List<Earthquake>> f = database.quakeDao().getAllQuakes(query);
-        return Transformations.map(f, this::asUIModelList);
+        return Transformations.map(f, this::asOverViewUIStateList);
     }
 
     //Get single entry
-    public LiveData<OverviewUIState> getDataSourceEntryById(int id) {
-        LiveData<Earthquake> f = database.quakeDao().getSingleQuakeData(id);
-        return Transformations.map(f, this::asUIModel);
+    public LiveData<DetailsUIState> getDataSourceEntryById(String eventId) {
+        LiveData<Earthquake> f = database.quakeDao().getSingleQuakeData(eventId);
+        return Transformations.map(f, this::asDetailsUIState);
     }
 
-    private OverviewUIState asUIModel(Earthquake earthquake){
-        return new OverviewUIState(earthquake.getEventId(), earthquake.getMagnitude(), earthquake.getPlace(), earthquake.getTime());
+    private DetailsUIState asDetailsUIState(Earthquake earthquake){
+        return new DetailsUIState(earthquake.getEventId(), earthquake.getMagnitude(), earthquake.getPlace(), earthquake.getTime(), earthquake.getUrl(), earthquake.getLongitude(), earthquake.getLatitude(), earthquake.getDepth());
     }
 
-    private List<OverviewUIState> asUIModelList(List<Earthquake> earthquakeList){
+    private List<OverviewUIState> asOverViewUIStateList(List<Earthquake> earthquakeList){
         List<OverviewUIState> overviewUIStateList = new ArrayList<>();
         for(Earthquake e: earthquakeList){
-            overviewUIStateList.add(asUIModel(e));
+            overviewUIStateList.add(new OverviewUIState(e.getEventId(), e.getMagnitude(), e.getPlace(), e.getTime()));
         }
         return overviewUIStateList;
     }
@@ -75,15 +75,15 @@ public class EarthquakeRepository {
                 .subscribe();
     }
 
-    // Gets the Network DTO as an Observable
+    // Gets the Network Response as an RXJava Observable
     private @NonNull Observable<EarthquakeProperty> getObservable(){
         GetEarthquakes service = RetrofitClient.getRetrofitInstance().create(GetEarthquakes.class);
         Observable<EarthquakeProperty> observable = service.getAllEarthquakes();
         return observable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 
-    //Sync data periodically
-    public void syncData(){
+    // Refresh Data is called on startup
+    public void refreshDataSource() {
         getObservable().subscribe(new Observer<EarthquakeProperty>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
@@ -92,7 +92,6 @@ public class EarthquakeRepository {
 
             @Override
             public void onNext(@NonNull EarthquakeProperty earthquakeProperty) {
-                deleteLocalData();
                 insertAllData(earthquakeProperty);
             }
 
@@ -108,8 +107,8 @@ public class EarthquakeRepository {
         });
     }
 
-    // Refresh Data
-    public void refreshDataSource() {
+    //Sync data periodically
+    public void syncData(){
         getObservable().subscribe(new Observer<EarthquakeProperty>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
@@ -118,6 +117,7 @@ public class EarthquakeRepository {
 
             @Override
             public void onNext(@NonNull EarthquakeProperty earthquakeProperty) {
+                deleteLocalData();
                 insertAllData(earthquakeProperty);
             }
 

@@ -1,15 +1,6 @@
-package com.example.quakereport.data.database;
+package com.example.quakereport.ui.details;
 
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
-
-@Entity(tableName = "earthquake", indices = {@Index(value = {"eventId"}, unique = true)})
-public class Earthquake {
-
-    @PrimaryKey(autoGenerate = true)
-    private int id;
+public class DetailsUIState {
 
     private String eventId;
 
@@ -27,8 +18,7 @@ public class Earthquake {
 
     private double depth;
 
-    public Earthquake(int id, String eventId, double magnitude, String place, long time, String url, double longitude, double latitude, double depth) {
-        this.id = id;
+    public DetailsUIState(String eventId, double magnitude, String place, long time, String url, double longitude, double latitude, double depth) {
         this.eventId = eventId;
         this.magnitude = magnitude;
         this.place = place;
@@ -37,26 +27,6 @@ public class Earthquake {
         this.longitude = longitude;
         this.latitude = latitude;
         this.depth = depth;
-    }
-
-    @Ignore
-    public Earthquake(String eventId, double magnitude, String place, long time, String url, double longitude, double latitude, double depth) {
-        this.eventId = eventId;
-        this.magnitude = magnitude;
-        this.place = place;
-        this.time = time;
-        this.url = url;
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.depth = depth;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getEventId() {
@@ -71,20 +41,20 @@ public class Earthquake {
         return magnitude;
     }
 
-    public String getPlace() {
-        return place;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
     public void setMagnitude(double magnitude) {
         this.magnitude = magnitude;
     }
 
+    public String getPlace() {
+        return place;
+    }
+
     public void setPlace(String place) {
         this.place = place;
+    }
+
+    public long getTime() {
+        return time;
     }
 
     public void setTime(long time) {

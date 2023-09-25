@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.quakereport.Utils;
 import com.example.quakereport.databinding.ListViewItemBinding;
 
 import java.util.Objects;
@@ -25,7 +26,7 @@ public class OverviewAdapter extends ListAdapter<OverviewUIState, OverviewAdapte
 
 
     public interface ListItemClickListener {
-        void onListItemClick(View view, String eventId);
+        void onListItemClick(String eventId, String location);
     }
 
      static class OverviewAdapterViewHolder extends RecyclerView.ViewHolder {
@@ -52,7 +53,7 @@ public class OverviewAdapter extends ListAdapter<OverviewUIState, OverviewAdapte
     public void onBindViewHolder(@NonNull OverviewAdapterViewHolder holder, int position) {
         OverviewUIState overviewUIState = getItem(position);
         holder.bind(overviewUIState);
-        holder.itemView.setOnClickListener(view -> mOnclickListener.onListItemClick(view,overviewUIState.getEventId()));
+        holder.itemView.setOnClickListener(view -> mOnclickListener.onListItemClick(overviewUIState.getEventId(), Utils.getLocation(overviewUIState.getPlace())));
 
     }
 }
