@@ -3,12 +3,11 @@ package com.example.quakereport.ui.overview;
 import android.graphics.drawable.GradientDrawable;
 import android.widget.TextView;
 
-import com.example.quakereport.data.database.Earthquake;
 import com.example.quakereport.Utils;
 
 import java.util.Date;
 
-public class BindingAdapter {
+public class OverviewBindingAdapter {
 
     @androidx.databinding.BindingAdapter("bindMagnitude")
     public static void bindMagnitude(TextView textView, OverviewUIState overviewUIState) {

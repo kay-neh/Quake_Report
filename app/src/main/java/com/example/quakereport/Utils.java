@@ -24,6 +24,30 @@ public class Utils {
         }
     }
 
+    public static String getDegreeFromLat(double latitude){
+        String s = formatThreeDecimal(latitude);
+        if(s.contains("-")){
+            return s.replace("-", "") + "°S";
+        }else {
+            return s + "°N";
+        }
+    }
+
+    public static String getDegreeFromLng(double longitude){
+        String s = formatThreeDecimal(longitude);
+        if(s.contains("-")){
+            return s.replace("-", "") + "°W";
+        }else {
+            return s + "°E";
+        }
+    }
+
+    public static String formatPointCoordinates(double latitude, double longitude){
+        String lat = getDegreeFromLat(latitude);
+        String lng = getDegreeFromLng(longitude);
+        return lat + ", " +lng;
+    }
+
     public static String formatDate(Date dateObject) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("LLL dd, yyyy", Locale.getDefault());
         return dateFormat.format(dateObject);
@@ -34,9 +58,19 @@ public class Utils {
         return dateFormat.format(dateObject);
     }
 
+    public static String formatDateTime(Date dateObject) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("LLL dd, yyyy h:mm a", Locale.getDefault());
+        return dateFormat.format(dateObject);
+    }
+
     public static String formatMagnitude(double magnitude) {
         DecimalFormat magnitudeFormat = new DecimalFormat("0.0");
         return magnitudeFormat.format(magnitude);
+    }
+
+    public static String formatThreeDecimal(double number){
+        DecimalFormat magnitudeFormat = new DecimalFormat("0.000");
+        return magnitudeFormat.format(number);
     }
 
     public static int getMagnitudeColor(Context context, double magnitude) {

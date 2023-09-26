@@ -13,7 +13,7 @@ public class DetailsViewModel extends AndroidViewModel {
 
     private final EarthquakeRepository earthquakeRepository;
     String eventId;
-    LiveData<DetailsUIState> detailsUIState;
+    public LiveData<DetailsUIState> detailsUIState;
 
     public DetailsViewModel(String eventId, @NonNull Application application) {
         super(application);
@@ -23,7 +23,7 @@ public class DetailsViewModel extends AndroidViewModel {
         getDetailsUIState(eventId);
     }
 
-    public void getDetailsUIState(String eventId){
+    private void getDetailsUIState(String eventId){
         detailsUIState =  earthquakeRepository.getDataSourceEntryById(eventId);
     }
 
