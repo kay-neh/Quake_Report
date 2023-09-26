@@ -120,7 +120,7 @@ public class DetailsFragment extends Fragment {
                 .radius(1000.0); // In meters
 
         map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        map.addMarker(new MarkerOptions().position(location).title("Marker"));
+        map.addMarker(new MarkerOptions().position(location).title("Earthquake"));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(location,zoomLevel));
         map.addCircle(circleOptions);
     }
