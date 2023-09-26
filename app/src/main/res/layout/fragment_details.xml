@@ -30,6 +30,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_view_details"
                 style="@style/CustomCardViewStyle"
+                app:cardBackgroundColor="@color/colorSurface"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 app:cardElevation="0dp"

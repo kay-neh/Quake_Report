@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#2B3D4D</color>
-    <color name="colorPrimaryDark">#23303D</color>
-    <color name="colorAccent">#10CAC9</color>
 
-    <color name="textColorEarthquake">@color/colorPrimary</color>
-    <color name="textColorEarthquakeDetails">#B4BAC0</color>
+    <color name="colorPrimaryDark">#23303D</color>
+    <color name="colorPrimary">#2B3D4D</color>
+    <color name="colorSecondary">#10CAC9</color>
+    <color name="colorSurface">#F5F5F5</color>
+    <color name="colorOnSurface">@color/colorPrimary</color>
+    <color name="colorBackground">#F5F5F5</color>
 
     <color name="iconColor">#000000</color>
-
     <color name="snackBarColor">#383838</color>
-    <color name="snackBarTextColor">#FFFFFF</color>
+    <color name="dividerColor">#B4BAC0</color>
+    <color name="cardDetailsColor">#4A7BA7</color>
+    <color name="cardDetailsTextColor">@color/colorOnSurface</color>
 
-    <color name="tan_background">#FFF7DA</color>
-    <color name="surface_background">#FFF7DA</color>
 
-    <color name="cardDetailsColor">@color/magnitude1</color>
-    <color name="cardDetailsTextColor">@color/iconColor</color>
 
     <!-- Color for an earthquake with magnitude 0 and 2 -->
     <color name="magnitude1">#4A7BA7</color>

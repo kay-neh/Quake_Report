@@ -48,7 +48,7 @@
                 android:paddingTop="16dp"
                 android:text="@string/no_quake_desc"
                 android:textAppearance="?android:textAppearanceMedium"
-                android:textColor="@color/textColorEarthquake" />
+                />
 
             <TextView
                 android:id="@+id/empty_txt_desc"
@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:visibility="visible"
-            android:indeterminateTint="@color/colorAccent" />
+            android:indeterminateTint="@color/colorSecondary" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
