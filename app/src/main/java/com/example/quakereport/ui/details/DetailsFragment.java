@@ -87,6 +87,9 @@ public class DetailsFragment extends Fragment {
         DetailsViewModelFactory detailsViewModelFactory = new DetailsViewModelFactory(application,argument[0]);
         DetailsViewModel detailsViewModel = new ViewModelProvider(this, detailsViewModelFactory).get(DetailsViewModel.class);
 
+        binding.setDetailsViewModel(detailsViewModel);
+        binding.setLifecycleOwner(this);
+
         detailsViewModel.detailsUIState.observe(this, new Observer<DetailsUIState>() {
             @Override
             public void onChanged(DetailsUIState detailsUIState) {
@@ -116,7 +119,7 @@ public class DetailsFragment extends Fragment {
                 .center(location)
                 .radius(1000.0); // In meters
 
-        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         map.addMarker(new MarkerOptions().position(location).title("Marker"));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(location,zoomLevel));
         map.addCircle(circleOptions);

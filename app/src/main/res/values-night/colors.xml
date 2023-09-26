@@ -12,6 +12,11 @@
     <color name="snackBarColor">#383838</color>
     <color name="snackBarTextColor">#FFFFFF</color>
 
+    <color name="surface_background">@color/colorPrimaryDark</color>
+
+    <color name="cardDetailsColor">@android:color/white</color>
+    <color name="cardDetailsTextColor">@color/iconColor</color>
+
     <!-- Color for an earthquake with magnitude 0 and 2 -->
     <color name="magnitude1">#4A7BA7</color>
 
