@@ -12,5 +12,9 @@
     <color name="cardDetailsColor">#96d6f0</color>
     <color name="cardDetailsTextColor">@color/iconColor</color>
 
+    <color name="cardViewBackgroundColor">@color/colorSurface</color>
+    <color name="constrainBackgroundColor">#313131</color>
+    <color name="constrainIconColor">#e6eef8</color>
+
 
 </resources>
