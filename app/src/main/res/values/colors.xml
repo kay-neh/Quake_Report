@@ -14,6 +14,11 @@
     <color name="cardDetailsColor">#4A7BA7</color>
     <color name="cardDetailsTextColor">@color/colorOnSurface</color>
 
+    <color name="cardViewBackgroundColor">@color/colorSurface</color>
+    <color name="constrainBackgroundColor">#dedede</color>
+    <color name="constrainIconColor">#2B3D4D</color>
+    <color name="bottomSheetDividerColor">#c2c2c2</color>
+
 
 
     <!-- Color for an earthquake with magnitude 0 and 2 -->

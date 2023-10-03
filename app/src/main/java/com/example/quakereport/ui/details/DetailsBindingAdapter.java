@@ -22,6 +22,19 @@ public class DetailsBindingAdapter {
         }
     }
 
+    @androidx.databinding.BindingAdapter("bindPlace")
+    public static void bindPlace(TextView textView, DetailsUIState detailsUIState) {
+        if(detailsUIState != null){
+            if(detailsUIState.getPlace() != null){
+                String place = detailsUIState.getPlace();
+                textView.setText(place);
+            }else{
+                textView.setText("Location Unavailable");
+            }
+
+        }
+    }
+
     @androidx.databinding.BindingAdapter("bindDetailsDepth")
     public static void bindDepth(TextView textView, DetailsUIState detailsUIState) {
         if(detailsUIState != null){
