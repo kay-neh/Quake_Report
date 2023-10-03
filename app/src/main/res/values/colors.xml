@@ -17,6 +17,7 @@
     <color name="cardViewBackgroundColor">@color/colorSurface</color>
     <color name="constrainBackgroundColor">#dedede</color>
     <color name="constrainIconColor">#2B3D4D</color>
+    <color name="bottomSheetDividerColor">#c2c2c2</color>
 
 
 

@@ -9,14 +9,14 @@
             android:defaultValue="@string/settings_order_by_default"
             android:entries="@array/settings_order_by_labels"
             android:entryValues="@array/settings_order_by_values"
-            android:icon="@drawable/order_by"
+            android:icon="@drawable/baseline_article_24"
             app:useSimpleSummaryProvider="true"
             android:key="@string/settings_order_by_key"
             android:title="@string/settings_order_by_label" />
 
         <EditTextPreference
             android:defaultValue="@string/settings_limit_default"
-            android:icon="@drawable/limit"
+            android:icon="@drawable/baseline_dataset_24"
             app:useSimpleSummaryProvider="true"
             android:key="@string/settings_limit_key"
             android:selectAllOnFocus="true"
@@ -28,7 +28,7 @@
 
         <SwitchPreferenceCompat
             android:defaultValue="@bool/settings_dark_mode_default"
-            android:icon="@drawable/night_mode"
+            android:icon="@drawable/baseline_light_mode_24"
             android:key="@string/settings_dark_mode_key"
             android:summaryOff="Off"
             android:summaryOn="On"

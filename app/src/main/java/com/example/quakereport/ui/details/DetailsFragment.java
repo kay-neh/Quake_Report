@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 
 import com.example.quakereport.R;
 import com.example.quakereport.databinding.FragmentDetailsBinding;
+import com.example.quakereport.databinding.FragmentDetailsBottomsheetBinding;
 import com.example.quakereport.databinding.FragmentDetailsNewBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,7 +37,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class DetailsFragment extends Fragment {
 
-    FragmentDetailsNewBinding binding;
+    FragmentDetailsBottomsheetBinding binding;
     GoogleMap map;
     LatLng location;
     String webpage;
@@ -45,7 +46,7 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater,R.layout.fragment_details_new,container,false);
+        binding = DataBindingUtil.inflate(inflater,R.layout.fragment_details_bottomsheet,container,false);
 
         String[] argument = DetailsFragmentArgs.fromBundle(getArguments()).getEventId();
         setTitle(argument[1]);
@@ -120,7 +121,7 @@ public class DetailsFragment extends Fragment {
                 .center(location)
                 .radius(1000.0); // In meters
 
-        map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         map.addMarker(new MarkerOptions().position(location).title("Earthquake"));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(location,zoomLevel));
         map.addCircle(circleOptions);
