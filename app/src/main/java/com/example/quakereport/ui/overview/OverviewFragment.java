@@ -136,7 +136,7 @@ public class OverviewFragment extends Fragment {
             binding.swipeDown.setRefreshing(false);
             Snackbar.make(binding.swipeDown, "Fetching the latest updates...", Snackbar.LENGTH_SHORT)
                     .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
-                    .setTextColor(getContext().getColor(R.color.colorOnSurface))
+                    .setTextColor(getContext().getColor(R.color.white))
                     .show();
         });
     }

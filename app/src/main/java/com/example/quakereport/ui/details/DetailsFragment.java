@@ -2,6 +2,7 @@ package com.example.quakereport.ui.details;
 
 import android.app.Application;
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -98,6 +99,7 @@ public class DetailsFragment extends Fragment {
                 webpage = detailsUIState.getUrl();
                 location = new LatLng(detailsUIState.getLatitude(),detailsUIState.getLongitude());
                 setMarker();
+                binding.distance.setText(calculateDistance() + " km away");
             }
         });
 
@@ -125,6 +127,22 @@ public class DetailsFragment extends Fragment {
         map.addMarker(new MarkerOptions().position(location).title("Earthquake"));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(location,zoomLevel));
         map.addCircle(circleOptions);
+    }
+
+    public String calculateDistance(){
+        Location markerLocation = new Location("");
+        markerLocation.setLatitude(location.latitude);
+        markerLocation.setLongitude(location.longitude);
+
+        LatLng location1 = new LatLng(4.8803502,7.0417099);
+        Location currentLocation = new Location("");
+        currentLocation.setLatitude(location1.latitude);
+        currentLocation.setLongitude(location1.longitude);
+
+        float result = currentLocation.distanceTo(markerLocation);
+
+        Log.d("Distance to Earthquake", String.valueOf(result/1000));
+        return String.valueOf(result/1000);
     }
 
     public void setTitle(String title){
