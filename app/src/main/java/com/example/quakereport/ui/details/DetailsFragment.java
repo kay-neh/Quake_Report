@@ -1,13 +1,16 @@
 package com.example.quakereport.ui.details;
 
+import android.Manifest;
 import android.app.Application;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
@@ -25,9 +28,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.quakereport.R;
-import com.example.quakereport.databinding.FragmentDetailsBinding;
 import com.example.quakereport.databinding.FragmentDetailsBottomsheetBinding;
-import com.example.quakereport.databinding.FragmentDetailsNewBinding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -35,19 +39,37 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.CancellationToken;
+import com.google.android.gms.tasks.CancellationTokenSource;
+import com.google.android.gms.tasks.OnTokenCanceledListener;
+import com.google.android.material.snackbar.Snackbar;
 
 public class DetailsFragment extends Fragment {
+
+    int REQUEST_LOCATION_PERMISSION = 1;
 
     FragmentDetailsBottomsheetBinding binding;
     GoogleMap map;
     LatLng location;
     String webpage;
+    Location myLocation;
+    FusedLocationProviderClient fusedLocationClient;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_details_bottomsheet,container,false);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull GoogleMap googleMap) {
+                map = googleMap;
+            }
+        });
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
         String[] argument = DetailsFragmentArgs.fromBundle(getArguments()).getEventId();
         setTitle(argument[1]);
@@ -93,26 +115,63 @@ public class DetailsFragment extends Fragment {
         binding.setDetailsViewModel(detailsViewModel);
         binding.setLifecycleOwner(this);
 
-        detailsViewModel.detailsUIState.observe(this, new Observer<DetailsUIState>() {
-            @Override
-            public void onChanged(DetailsUIState detailsUIState) {
-                webpage = detailsUIState.getUrl();
-                location = new LatLng(detailsUIState.getLatitude(),detailsUIState.getLongitude());
-                setMarker();
-                binding.distance.setText(calculateDistance() + " km away");
-            }
+        detailsViewModel.detailsUIState.observe(this, detailsUIState -> {
+            webpage = detailsUIState.getUrl();
+            location = new LatLng(detailsUIState.getLatitude(),detailsUIState.getLongitude());
+            setMarker();
+            getCurrentLocation();
         });
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(@NonNull GoogleMap googleMap) {
-                map = googleMap;
-            }
-        });
-
 
         return binding.getRoot();
+    }
+
+    public void getCurrentLocation(){
+        // Check if location permission was granted first
+        // before enabling my location else request permission first
+        // also get user's current location and use it to calculate distance to marked point
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            map.setMyLocationEnabled(true);
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
+                @NonNull
+                @Override
+                public CancellationToken onCanceledRequested(@NonNull OnTokenCanceledListener onTokenCanceledListener) {
+                    return new CancellationTokenSource().getToken();
+                }
+
+                @Override
+                public boolean isCancellationRequested() {
+                    return false;
+                }
+            }).addOnSuccessListener(location -> {
+                if(location != null){
+                    myLocation = location;
+                    Log.e("Mock Location", "Lat: 4.8803502, Lng: 7.0417099");
+                    Log.e("My Location", "Lat: " +myLocation.getLatitude() +", Lng: " +myLocation.getLongitude());
+                    calculateAndDisplayDistance(myLocation);
+                }else {
+                    Snackbar.make(binding.snackbarConstraint, "Error calculating distance. Please ensure location is on...", Snackbar.LENGTH_SHORT)
+                            .setAnchorView(binding.snackbarConstraint)
+                            .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
+                            .setTextColor(getContext().getColor(R.color.white))
+                            .show();
+                }
+            });
+        }
+        else {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Check if location permissions are granted and if so enable the
+        // location data layer.
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.length >= 1 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                getCurrentLocation();
+            }
+        }
     }
 
     public void setMarker(){
@@ -129,20 +188,13 @@ public class DetailsFragment extends Fragment {
         map.addCircle(circleOptions);
     }
 
-    public String calculateDistance(){
+    public void calculateAndDisplayDistance(Location myLocation){
         Location markerLocation = new Location("");
         markerLocation.setLatitude(location.latitude);
         markerLocation.setLongitude(location.longitude);
-
-        LatLng location1 = new LatLng(4.8803502,7.0417099);
-        Location currentLocation = new Location("");
-        currentLocation.setLatitude(location1.latitude);
-        currentLocation.setLongitude(location1.longitude);
-
-        float result = currentLocation.distanceTo(markerLocation);
-
-        Log.d("Distance to Earthquake", String.valueOf(result/1000));
-        return String.valueOf(result/1000);
+        float result = myLocation.distanceTo(markerLocation);
+        String distance = String.valueOf(result/1000);
+        binding.distance.setText(distance + " km away");
     }
 
     public void setTitle(String title){
