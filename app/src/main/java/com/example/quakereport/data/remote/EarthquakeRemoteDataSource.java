@@ -8,6 +8,7 @@ import com.example.quakereport.data.local.Earthquake;
 import java.util.List;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -38,7 +39,8 @@ public class EarthquakeRemoteDataSource implements EarthquakeDataSource {
     }
 
     @Override
-    public void deleteAllEarthquake() {
+    public Completable deleteAllEarthquake() {
         // Not required for remote datasource
+        return null;
     }
 }

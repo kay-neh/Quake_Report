@@ -7,6 +7,7 @@ import com.example.quakereport.data.remote.EarthquakeProperty;
 
 import java.util.List;
 
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 
 public interface EarthquakeDataSource {
@@ -19,7 +20,7 @@ public interface EarthquakeDataSource {
 
     public void saveEarthquakes(EarthquakeProperty earthquakeProperty);
 
-    public void deleteAllEarthquake();
+    public Completable deleteAllEarthquake();
 
 
 }

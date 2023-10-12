@@ -75,7 +75,7 @@ public class OverviewFragment extends Fragment {
         setNightModeWithPreference();
         overviewViewModel.overviewUIStateList.observe(getViewLifecycleOwner(), overviewUIStateList -> {
             if (overviewUIStateList != null) {
-                Log.i("StateList size", String.valueOf(overviewUIStateList.size()));
+                Log.e("StateList size", String.valueOf(overviewUIStateList.size()));
                 adapter.submitList(overviewUIStateList);
                 if(!overviewUIStateList.isEmpty()){
                     binding.progressBar.setVisibility(View.GONE);

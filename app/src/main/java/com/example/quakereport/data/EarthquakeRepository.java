@@ -14,6 +14,7 @@ import com.example.quakereport.data.remote.EarthquakeRemoteDataSource;
 import java.util.List;
 
 import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.CompletableObserver;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -42,9 +43,6 @@ public class EarthquakeRepository {
 
     public void updateEarthquakeFromRemoteDataSource(){
         Observable<EarthquakeProperty> observableRemoteEarthquakes = earthquakeRemoteDataSource.getEarthquakes();
-        // Assuming network would always be available safely
-        // delete all earthquakes first
-        earthquakeLocalDataSource.deleteAllEarthquake();
         observableRemoteEarthquakes.subscribe(new Observer<EarthquakeProperty>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
@@ -53,12 +51,30 @@ public class EarthquakeRepository {
 
             @Override
             public void onNext(@NonNull EarthquakeProperty earthquakeProperty) {
-                earthquakeLocalDataSource.saveEarthquakes(earthquakeProperty);
+                Log.e("OnNext called", "onNext");
+                earthquakeLocalDataSource.deleteAllEarthquake()
+                        .subscribe(new CompletableObserver() {
+                            @Override
+                            public void onSubscribe(@NonNull Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                // save to database only when delete operation is completed
+                                earthquakeLocalDataSource.saveEarthquakes(earthquakeProperty);
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable e) {
+
+                            }
+                        });
             }
 
             @Override
             public void onError(@NonNull Throwable e) {
-                Log.i("remote Error response", e.toString());
+                Log.e("remote Error response", e.toString());
             }
 
             @Override

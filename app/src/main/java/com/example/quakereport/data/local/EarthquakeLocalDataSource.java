@@ -10,7 +10,11 @@ import com.example.quakereport.data.remote.EarthquakeProperty;
 import java.util.List;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableObserver;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class EarthquakeLocalDataSource implements EarthquakeDataSource {
@@ -48,10 +52,9 @@ public class EarthquakeLocalDataSource implements EarthquakeDataSource {
     }
 
     @Override
-    public void deleteAllEarthquake() {
-        earthquakeDao.deleteAll()
+    public Completable deleteAllEarthquake() {
+        return earthquakeDao.deleteAll()
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+                .observeOn(AndroidSchedulers.mainThread());
     }
 }
