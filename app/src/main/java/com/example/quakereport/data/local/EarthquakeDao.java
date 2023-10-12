@@ -1,4 +1,4 @@
-package com.example.quakereport.data.database;
+package com.example.quakereport.data.local;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -13,7 +13,7 @@ import java.util.List;
 import io.reactivex.rxjava3.core.Completable;
 
 @Dao
-public interface EarthquakeDatabaseDao {
+public interface EarthquakeDao {
 
     //Testing RawQuery for Read all operation
     @RawQuery(observedEntities = Earthquake.class)

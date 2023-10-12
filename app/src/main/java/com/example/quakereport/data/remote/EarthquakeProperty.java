@@ -1,6 +1,6 @@
-package com.example.quakereport.data.network;
+package com.example.quakereport.data.remote;
 
-import com.example.quakereport.data.database.Earthquake;
+import com.example.quakereport.data.local.Earthquake;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;

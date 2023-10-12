@@ -7,12 +7,14 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.preference.PreferenceManager;
 
 import com.example.quakereport.R;
 import com.example.quakereport.data.EarthquakeRepository;
-import com.example.quakereport.data.database.EarthquakeDatabase;
+import com.example.quakereport.data.local.Earthquake;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OverviewViewModel extends AndroidViewModel {
@@ -26,8 +28,7 @@ public class OverviewViewModel extends AndroidViewModel {
 
     public OverviewViewModel(@NonNull Application application) {
         super(application);
-        EarthquakeDatabase database = EarthquakeDatabase.getDatabase(application);
-        earthquakeRepository = new EarthquakeRepository(database);
+        earthquakeRepository = new EarthquakeRepository(application);
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(application);
         orderFilter = sharedPrefs.getString(
                 application.getString(R.string.settings_order_by_key),
@@ -36,7 +37,7 @@ public class OverviewViewModel extends AndroidViewModel {
                 application.getString(R.string.settings_limit_key),
                 application.getString(R.string.settings_limit_default));
         refreshDataSource();
-        getOverViewUIStateList(orderFilter,limitFilter);
+        getOverViewUIStateList(false,orderFilter,limitFilter);
     }
 
     public void onEarthquakeClicked(String[] data){
@@ -48,11 +49,19 @@ public class OverviewViewModel extends AndroidViewModel {
     }
 
     public void refreshDataSource() {
-        earthquakeRepository.refreshDataSource();
+        earthquakeRepository.updateEarthquakeFromRemoteDataSource();
     }
 
-    public void getOverViewUIStateList(String order, String limit){
-        overviewUIStateList =  earthquakeRepository.getDataSourceEntries(order, limit);
+    public void getOverViewUIStateList(boolean forceUpdate, String order, String limit){
+        overviewUIStateList = Transformations.map(earthquakeRepository.getEarthquakes(forceUpdate, order, limit), this::asOverViewUIStateList);
+    }
+
+    private List<OverviewUIState> asOverViewUIStateList(List<Earthquake> earthquakeList){
+        List<OverviewUIState> overviewUIStateList = new ArrayList<>();
+        for(Earthquake e: earthquakeList){
+            overviewUIStateList.add(new OverviewUIState(e.getEventId(), e.getMagnitude(), e.getPlace(), e.getTime()));
+        }
+        return overviewUIStateList;
     }
 
 }

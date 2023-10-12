@@ -1,4 +1,4 @@
-package com.example.quakereport.data.network;
+package com.example.quakereport.data.remote;
 
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;

@@ -75,7 +75,7 @@ public class OverviewFragment extends Fragment {
         setNightModeWithPreference();
         overviewViewModel.overviewUIStateList.observe(getViewLifecycleOwner(), overviewUIStateList -> {
             if (overviewUIStateList != null) {
-                Log.i("StateList size", String.valueOf(overviewUIStateList.size()));
+                Log.e("StateList size", String.valueOf(overviewUIStateList.size()));
                 adapter.submitList(overviewUIStateList);
                 if(!overviewUIStateList.isEmpty()){
                     binding.progressBar.setVisibility(View.GONE);
@@ -84,20 +84,20 @@ public class OverviewFragment extends Fragment {
         });
 
         spListen = (sharedPreferences, key) -> {
-            if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
+            if (key.equals(requireActivity().getString(R.string.settings_order_by_key))) {
+                overviewViewModel.getOverViewUIStateList(false,sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(
                                 getContext().getString(R.string.settings_limit_key),
                                 getContext().getString(R.string.settings_limit_default)));
             }
-            if (key.equals(getContext().getString(R.string.settings_limit_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
+            if (key.equals(requireActivity().getString(R.string.settings_limit_key))) {
+                overviewViewModel.getOverViewUIStateList(false,sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
                                 getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
             }
-            if (key.equals(getContext().getString(R.string.settings_dark_mode_key))) {
+            if (key.equals(requireActivity().getString(R.string.settings_dark_mode_key))) {
                 setNightMode(sharedPreferences.getBoolean(key, getContext().getResources().getBoolean(R.bool.settings_dark_mode_default)));
             }
         };
@@ -136,7 +136,7 @@ public class OverviewFragment extends Fragment {
             binding.swipeDown.setRefreshing(false);
             Snackbar.make(binding.swipeDown, "Fetching the latest updates...", Snackbar.LENGTH_SHORT)
                     .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
-                    .setTextColor(getContext().getColor(R.color.colorOnSurface))
+                    .setTextColor(getContext().getColor(R.color.white))
                     .show();
         });
     }

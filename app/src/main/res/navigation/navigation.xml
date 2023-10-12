@@ -22,7 +22,6 @@
     <fragment
         android:id="@+id/detailsFragment"
         android:name="com.example.quakereport.ui.details.DetailsFragment"
-        android:label="detailsFragment"
         tools:layout="@layout/fragment_details">
         <argument
             android:name="eventId"
