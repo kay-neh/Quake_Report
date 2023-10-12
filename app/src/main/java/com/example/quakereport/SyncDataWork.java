@@ -1,5 +1,6 @@
 package com.example.quakereport;
 
+import android.app.Application;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -7,7 +8,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.example.quakereport.data.EarthquakeRepository;
-import com.example.quakereport.data.database.EarthquakeDatabase;
+
 
 import retrofit2.HttpException;
 
@@ -22,10 +23,9 @@ public class SyncDataWork extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        EarthquakeDatabase database = EarthquakeDatabase.getDatabase(getApplicationContext());
-        EarthquakeRepository repository = new EarthquakeRepository(database);
+        EarthquakeRepository repository = new EarthquakeRepository((Application) getApplicationContext());
         try{
-            repository.syncData();
+            repository.updateEarthquakeFromRemoteDataSource();
             return Result.success();
         }catch (HttpException e){
             return Result.retry();

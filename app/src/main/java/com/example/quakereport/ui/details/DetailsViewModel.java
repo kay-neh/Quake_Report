@@ -5,9 +5,10 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Transformations;
 
 import com.example.quakereport.data.EarthquakeRepository;
-import com.example.quakereport.data.database.EarthquakeDatabase;
+import com.example.quakereport.data.local.Earthquake;
 
 public class DetailsViewModel extends AndroidViewModel {
 
@@ -17,14 +18,17 @@ public class DetailsViewModel extends AndroidViewModel {
 
     public DetailsViewModel(String eventId, @NonNull Application application) {
         super(application);
-        EarthquakeDatabase database = EarthquakeDatabase.getDatabase(application);
-        earthquakeRepository = new EarthquakeRepository(database);
+        earthquakeRepository = new EarthquakeRepository(application);
         this.eventId = eventId;
         getDetailsUIState(eventId);
     }
 
     private void getDetailsUIState(String eventId){
-        detailsUIState =  earthquakeRepository.getDataSourceEntryById(eventId);
+        detailsUIState = Transformations.map(earthquakeRepository.getEarthquake(eventId), this::asDetailsUIState);
+    }
+
+    private DetailsUIState asDetailsUIState(Earthquake earthquake){
+        return new DetailsUIState(earthquake.getEventId(), earthquake.getMagnitude(), earthquake.getPlace(), earthquake.getTime(), earthquake.getUrl(), earthquake.getLongitude(), earthquake.getLatitude(), earthquake.getDepth());
     }
 
 }

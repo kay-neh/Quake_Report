@@ -1,4 +1,4 @@
-package com.example.quakereport.data.database;
+package com.example.quakereport.data.local;
 
 import androidx.room.Entity;
 import androidx.room.Ignore;

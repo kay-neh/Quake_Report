@@ -84,20 +84,20 @@ public class OverviewFragment extends Fragment {
         });
 
         spListen = (sharedPreferences, key) -> {
-            if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
+            if (key.equals(requireActivity().getString(R.string.settings_order_by_key))) {
+                overviewViewModel.getOverViewUIStateList(false,sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(
                                 getContext().getString(R.string.settings_limit_key),
                                 getContext().getString(R.string.settings_limit_default)));
             }
-            if (key.equals(getContext().getString(R.string.settings_limit_key))) {
-                overviewViewModel.getOverViewUIStateList(sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
+            if (key.equals(requireActivity().getString(R.string.settings_limit_key))) {
+                overviewViewModel.getOverViewUIStateList(false,sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
                                 getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
             }
-            if (key.equals(getContext().getString(R.string.settings_dark_mode_key))) {
+            if (key.equals(requireActivity().getString(R.string.settings_dark_mode_key))) {
                 setNightMode(sharedPreferences.getBoolean(key, getContext().getResources().getBoolean(R.bool.settings_dark_mode_default)));
             }
         };

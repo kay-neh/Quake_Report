@@ -16,7 +16,6 @@ import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
@@ -145,8 +144,8 @@ public class DetailsFragment extends Fragment {
             }).addOnSuccessListener(location -> {
                 if(location != null){
                     myLocation = location;
-                    Log.e("Mock Location", "Lat: 4.8803502, Lng: 7.0417099");
-                    Log.e("My Location", "Lat: " +myLocation.getLatitude() +", Lng: " +myLocation.getLongitude());
+                    Log.e("Dev Location", "Lat: 4.8803502, Lng: 7.0417099");
+                    Log.e("Device Location", "Lat: " +myLocation.getLatitude() +", Lng: " +myLocation.getLongitude());
                     calculateAndDisplayDistance(myLocation);
                 }else {
                     Snackbar.make(binding.snackbarConstraint, "Error calculating distance. Please ensure location is on...", Snackbar.LENGTH_SHORT)
