@@ -10,7 +10,6 @@ import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -44,7 +43,7 @@ public class OverviewFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater,R.layout.fragment_overview,container,false);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_overview, container, false);
 
         activity = getActivity();
 
@@ -80,22 +79,24 @@ public class OverviewFragment extends Fragment {
             if (overviewUIStateList != null) {
                 Log.e("StateList size", String.valueOf(overviewUIStateList.size()));
                 adapter.submitList(overviewUIStateList);
-                if(!overviewUIStateList.isEmpty()){
+                if (!overviewUIStateList.isEmpty()) {
                     overviewViewModel.onProgressBarTriggered();
                 }
             }
         });
 
         overviewViewModel.progressBarEvent.observe(this, aBoolean -> {
-            if(aBoolean){
-                binding.progressBar.setVisibility(View.VISIBLE);
-            }else {
-                binding.progressBar.setVisibility(View.GONE);
+            if (aBoolean) {
+                binding.shimmerViewContainer.startShimmer();
+                binding.shimmerViewContainer.setVisibility(View.VISIBLE);
+            } else {
+                binding.shimmerViewContainer.stopShimmer();
+                binding.shimmerViewContainer.setVisibility(View.GONE);
             }
         });
 
         overviewViewModel.snackBarEvent.observe(this, aBoolean -> {
-            if(aBoolean){
+            if (aBoolean) {
                 Snackbar.make(binding.swipeDown, "Fetching the latest updates...", Snackbar.LENGTH_SHORT)
                         .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
                         .setTextColor(getContext().getColor(R.color.white))
@@ -105,7 +106,7 @@ public class OverviewFragment extends Fragment {
         });
 
         overviewViewModel.navigateToEarthquakeDetails.observe(this, data -> {
-            if(data != null){
+            if (data != null) {
                 NavHostFragment navHostFragment = (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
                 NavController navController = navHostFragment.getNavController();
                 navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment(data));
@@ -115,19 +116,19 @@ public class OverviewFragment extends Fragment {
         });
 
         onSharedPreferenceChangeListener = (sharedPreferences, key) -> {
-                if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
-                    overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
-                            ,
-                            sharedPreferences.getString(
-                                    getContext().getString(R.string.settings_limit_key),
-                                    getContext().getString(R.string.settings_limit_default)));
-                }
-                if (key.equals(getContext().getString(R.string.settings_limit_key))) {
-                    overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
-                                    getContext().getString(R.string.settings_order_by_default))
-                            ,
-                            sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
-                }
+            if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
+                overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
+                        ,
+                        sharedPreferences.getString(
+                                getContext().getString(R.string.settings_limit_key),
+                                getContext().getString(R.string.settings_limit_default)));
+            }
+            if (key.equals(getContext().getString(R.string.settings_limit_key))) {
+                overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
+                                getContext().getString(R.string.settings_order_by_default))
+                        ,
+                        sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
+            }
         };
         sharedPrefs.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
@@ -137,15 +138,15 @@ public class OverviewFragment extends Fragment {
     public void initAdapter() {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         binding.list.setLayoutManager(llm);
-        adapter = new OverviewAdapter((eventId,location) -> {
+        adapter = new OverviewAdapter((eventId, location) -> {
             //handle click events here
-            String[] data = {eventId,location};
+            String[] data = {eventId, location};
             overviewViewModel.onEarthquakeClicked(data);
         });
         binding.list.setAdapter(adapter);
     }
 
-    public void swipeDownAction(){
+    public void swipeDownAction() {
         binding.swipeDown.setOnRefreshListener(() -> {
             overviewViewModel.refreshDataSource();
             binding.swipeDown.setRefreshing(false);
@@ -156,7 +157,7 @@ public class OverviewFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(sharedPrefs != null){
+        if (sharedPrefs != null) {
             sharedPrefs.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         }
     }
