@@ -70,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="visible"
+            android:visibility="gone"
             android:indeterminateTint="@color/colorSecondary" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

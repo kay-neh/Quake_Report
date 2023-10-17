@@ -26,6 +26,12 @@ public class OverviewViewModel extends AndroidViewModel {
     private MutableLiveData<String[]> _navigateToEarthquakeDetails = new MutableLiveData<>();
     LiveData<String[]> navigateToEarthquakeDetails = _navigateToEarthquakeDetails;
 
+    private MutableLiveData<Boolean> _snackBarEvent = new MutableLiveData<>(false);
+    LiveData<Boolean> snackBarEvent = _snackBarEvent;
+
+    private MutableLiveData<Boolean> _progressBarEvent = new MutableLiveData<>(false);
+    LiveData<Boolean> progressBarEvent = _progressBarEvent;
+
     public OverviewViewModel(@NonNull Application application) {
         super(application);
         earthquakeRepository = new EarthquakeRepository(application);
@@ -36,6 +42,7 @@ public class OverviewViewModel extends AndroidViewModel {
         limitFilter = sharedPrefs.getString(
                 application.getString(R.string.settings_limit_key),
                 application.getString(R.string.settings_limit_default));
+        triggerProgressBar();
         refreshDataSource();
         getOverViewUIStateList(false,orderFilter,limitFilter);
     }
@@ -48,8 +55,24 @@ public class OverviewViewModel extends AndroidViewModel {
         _navigateToEarthquakeDetails.setValue(null);
     }
 
+    public void triggerSnackBar(){
+        _snackBarEvent.setValue(true);
+    }
+
+    public void onSnackBarTriggered(){
+        _snackBarEvent.setValue(false);
+    }
+
+    public void triggerProgressBar(){
+        _progressBarEvent.setValue(true);
+    }
+
+    public void onProgressBarTriggered(){
+        _progressBarEvent.setValue(false);
+    }
+
     public void refreshDataSource() {
-        earthquakeRepository.updateEarthquakeFromRemoteDataSource();
+        earthquakeRepository.refreshEarthquake();
     }
 
     public void getOverViewUIStateList(boolean forceUpdate, String order, String limit){

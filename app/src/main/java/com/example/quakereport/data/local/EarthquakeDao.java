@@ -17,17 +17,17 @@ public interface EarthquakeDao {
 
     //Testing RawQuery for Read all operation
     @RawQuery(observedEntities = Earthquake.class)
-    LiveData<List<Earthquake>> getAllQuakes(SupportSQLiteQuery query);
+    LiveData<List<Earthquake>> getEarthquakes(SupportSQLiteQuery query);
 
     //Read single operation
     @Query("SELECT * FROM earthquake WHERE eventId = :eventId")
-    LiveData<Earthquake> getSingleQuakeData(String eventId);
+    LiveData<Earthquake> getEarthquake(String eventId);
 
     //Insert all operation
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    Completable insertAllQuakes(List<Earthquake> earthquakeList);
+    Completable insertEarthquakes(List<Earthquake> earthquakeList);
 
     //Delete all operation
     @Query("DELETE FROM earthquake")
-    Completable deleteAll();
+    Completable deleteEarthquakes();
 }

@@ -1,10 +1,10 @@
 package com.example.quakereport.ui.overview;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
@@ -36,14 +36,17 @@ public class OverviewFragment extends Fragment {
     FragmentOverviewBinding binding;
     OverviewAdapter adapter;
     SharedPreferences sharedPrefs;
-    SharedPreferences.OnSharedPreferenceChangeListener spListen;
+    SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener;
     OverviewViewModel overviewViewModel;
+    Activity activity;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_overview,container,false);
+
+        activity = getActivity();
 
         //Inflating menus
         MenuHost menuHost = requireActivity();
@@ -55,7 +58,7 @@ public class OverviewFragment extends Fragment {
 
             @Override
             public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment);
+                NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
                 return NavigationUI.onNavDestinationSelected(menuItem, navController);
             }
 
@@ -72,49 +75,61 @@ public class OverviewFragment extends Fragment {
 
         //Init sharedPreference, get list and register listener
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        setNightModeWithPreference();
+
         overviewViewModel.overviewUIStateList.observe(getViewLifecycleOwner(), overviewUIStateList -> {
             if (overviewUIStateList != null) {
                 Log.e("StateList size", String.valueOf(overviewUIStateList.size()));
                 adapter.submitList(overviewUIStateList);
                 if(!overviewUIStateList.isEmpty()){
-                    binding.progressBar.setVisibility(View.GONE);
+                    overviewViewModel.onProgressBarTriggered();
                 }
             }
         });
 
-        spListen = (sharedPreferences, key) -> {
-            if (key.equals(requireActivity().getString(R.string.settings_order_by_key))) {
-                overviewViewModel.getOverViewUIStateList(false,sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
-                        ,
-                        sharedPreferences.getString(
-                                getContext().getString(R.string.settings_limit_key),
-                                getContext().getString(R.string.settings_limit_default)));
+        overviewViewModel.progressBarEvent.observe(this, aBoolean -> {
+            if(aBoolean){
+                binding.progressBar.setVisibility(View.VISIBLE);
+            }else {
+                binding.progressBar.setVisibility(View.GONE);
             }
-            if (key.equals(requireActivity().getString(R.string.settings_limit_key))) {
-                overviewViewModel.getOverViewUIStateList(false,sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
-                                getContext().getString(R.string.settings_order_by_default))
-                        ,
-                        sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
+        });
+
+        overviewViewModel.snackBarEvent.observe(this, aBoolean -> {
+            if(aBoolean){
+                Snackbar.make(binding.swipeDown, "Fetching the latest updates...", Snackbar.LENGTH_SHORT)
+                        .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
+                        .setTextColor(getContext().getColor(R.color.white))
+                        .show();
+                overviewViewModel.onSnackBarTriggered();
             }
-            if (key.equals(requireActivity().getString(R.string.settings_dark_mode_key))) {
-                setNightMode(sharedPreferences.getBoolean(key, getContext().getResources().getBoolean(R.bool.settings_dark_mode_default)));
+        });
+
+        overviewViewModel.navigateToEarthquakeDetails.observe(this, data -> {
+            if(data != null){
+                NavHostFragment navHostFragment = (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+                NavController navController = navHostFragment.getNavController();
+                navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment(data));
+                overviewViewModel.onEarthquakeDetailsNavigated();
             }
+
+        });
+
+        onSharedPreferenceChangeListener = (sharedPreferences, key) -> {
+                if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
+                    overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
+                            ,
+                            sharedPreferences.getString(
+                                    getContext().getString(R.string.settings_limit_key),
+                                    getContext().getString(R.string.settings_limit_default)));
+                }
+                if (key.equals(getContext().getString(R.string.settings_limit_key))) {
+                    overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
+                                    getContext().getString(R.string.settings_order_by_default))
+                            ,
+                            sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
+                }
         };
-        sharedPrefs.registerOnSharedPreferenceChangeListener(spListen);
-
-        overviewViewModel.navigateToEarthquakeDetails.observe(this, new Observer<String[]>() {
-            @Override
-            public void onChanged(String[] data) {
-                if(data != null){
-                    NavHostFragment navHostFragment = (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-                    NavController navController = navHostFragment.getNavController();
-                    navController.navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailsFragment(data));
-                    overviewViewModel.onEarthquakeDetailsNavigated();
-                }
-
-            }
-        });
+        sharedPrefs.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
         return binding.getRoot();
     }
@@ -134,31 +149,16 @@ public class OverviewFragment extends Fragment {
         binding.swipeDown.setOnRefreshListener(() -> {
             overviewViewModel.refreshDataSource();
             binding.swipeDown.setRefreshing(false);
-            Snackbar.make(binding.swipeDown, "Fetching the latest updates...", Snackbar.LENGTH_SHORT)
-                    .setBackgroundTint(getContext().getColor(R.color.snackBarColor))
-                    .setTextColor(getContext().getColor(R.color.white))
-                    .show();
+            overviewViewModel.triggerSnackBar();
         });
-    }
-
-    public void setNightModeWithPreference(){
-        //Set Night mode
-        setNightMode(sharedPrefs.getBoolean(
-                getString(R.string.settings_dark_mode_key),
-                getResources().getBoolean(R.bool.settings_dark_mode_default)));
-    }
-
-    public void setNightMode(Boolean nightValue) {
-        if (nightValue) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        sharedPrefs.unregisterOnSharedPreferenceChangeListener(spListen);
+        if(sharedPrefs != null){
+            sharedPrefs.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        }
     }
+
 }

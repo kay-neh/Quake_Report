@@ -18,7 +18,7 @@ public interface EarthquakeDataSource {
 
     public LiveData<Earthquake> observeEarthquake(String eventId);
 
-    public void saveEarthquakes(EarthquakeProperty earthquakeProperty);
+    public Completable saveEarthquakes(EarthquakeProperty earthquakeProperty);
 
     public Completable deleteAllEarthquake();
 

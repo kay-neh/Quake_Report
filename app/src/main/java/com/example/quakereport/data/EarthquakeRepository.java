@@ -13,11 +13,12 @@ import com.example.quakereport.data.remote.EarthquakeRemoteDataSource;
 
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.CompletableObserver;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class EarthquakeRepository {
 
@@ -41,9 +42,15 @@ public class EarthquakeRepository {
         return earthquakeLocalDataSource.observeEarthquake(eventId);
     }
 
-    public void updateEarthquakeFromRemoteDataSource(){
-        Observable<EarthquakeProperty> observableRemoteEarthquakes = earthquakeRemoteDataSource.getEarthquakes();
-        observableRemoteEarthquakes.subscribe(new Observer<EarthquakeProperty>() {
+    public void refreshEarthquake(){
+        updateEarthquakeFromRemoteDataSource();
+    }
+
+    private void updateEarthquakeFromRemoteDataSource(){
+        earthquakeRemoteDataSource.getEarthquakes()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<EarthquakeProperty>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
 
@@ -52,24 +59,7 @@ public class EarthquakeRepository {
             @Override
             public void onNext(@NonNull EarthquakeProperty earthquakeProperty) {
                 Log.e("OnNext called", "onNext");
-                earthquakeLocalDataSource.deleteAllEarthquake()
-                        .subscribe(new CompletableObserver() {
-                            @Override
-                            public void onSubscribe(@NonNull Disposable d) {
-
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                // save to database only when delete operation is completed
-                                earthquakeLocalDataSource.saveEarthquakes(earthquakeProperty);
-                            }
-
-                            @Override
-                            public void onError(@NonNull Throwable e) {
-
-                            }
-                        });
+                syncEarthquakes(earthquakeProperty);
             }
 
             @Override
@@ -82,6 +72,36 @@ public class EarthquakeRepository {
 
             }
         });
+    }
+
+    private void saveEarthquake(EarthquakeProperty earthquakeProperty){
+        earthquakeLocalDataSource.saveEarthquakes(earthquakeProperty)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe();
+    }
+
+    private void syncEarthquakes(EarthquakeProperty earthquakeProperty){
+        earthquakeLocalDataSource.deleteAllEarthquake()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        // save to database only when delete operation is completed
+                        saveEarthquake(earthquakeProperty);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+
+                    }
+                });
     }
 
 }
