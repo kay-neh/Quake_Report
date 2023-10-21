@@ -9,13 +9,11 @@ import com.example.quakereport.data.remote.EarthquakeProperty;
 
 import java.util.List;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.annotations.NonNull;
+
 import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.CompletableObserver;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Single;
+
 
 public class EarthquakeLocalDataSource implements EarthquakeDataSource {
 
@@ -35,26 +33,33 @@ public class EarthquakeLocalDataSource implements EarthquakeDataSource {
     public LiveData<List<Earthquake>> observeEarthquakes(String order, String limit) {
         String statement = "SELECT * FROM earthquake ORDER BY " + order + " LIMIT " + limit;
         SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
-        return earthquakeDao.getAllQuakes(query);
+        return earthquakeDao.observeEarthquakes(query);
     }
 
     @Override
     public LiveData<Earthquake> observeEarthquake(String eventId) {
-        return earthquakeDao.getSingleQuakeData(eventId);
+        return earthquakeDao.observeEarthquake(eventId);
     }
 
     @Override
-    public void saveEarthquakes(EarthquakeProperty earthquakeProperty) {
-        earthquakeDao.insertAllQuakes(earthquakeProperty.asDatabaseModel())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+    public Single<List<Earthquake>> getEarthquakes(String order, String limit) {
+        String statement = "SELECT * FROM earthquake ORDER BY " + order + " LIMIT " + limit;
+        SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
+        return earthquakeDao.getEarthquakes(query);
+    }
+
+    @Override
+    public Single<Earthquake> getEarthquake(String eventId) {
+        return earthquakeDao.getEarthquake(eventId);
+    }
+
+    @Override
+    public Completable saveEarthquakes(EarthquakeProperty earthquakeProperty) {
+        return earthquakeDao.insertEarthquakes(earthquakeProperty.asDatabaseModel());
     }
 
     @Override
     public Completable deleteAllEarthquake() {
-        return earthquakeDao.deleteAll()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
+        return earthquakeDao.deleteEarthquakes();
     }
 }

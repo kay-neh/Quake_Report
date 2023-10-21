@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:shimmer="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.overview.OverviewFragment">
 
@@ -15,63 +16,77 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:listitem="@layout/list_view_item"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:listitem="@layout/list_view_item" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <!--emptyview-->
-        <RelativeLayout
-            android:id="@+id/empty_state"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone">
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            shimmer:duration="800">
 
-            <ImageView
-                android:id="@+id/empty_img"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:src="@drawable/no_internet" />
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="none">
 
-            <TextView
-                android:id="@+id/empty_txt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/empty_img"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="sans-serif-medium"
-                android:paddingTop="16dp"
-                android:text="@string/no_quake_desc"
-                android:textAppearance="?android:textAppearanceMedium"
-                />
+                <!-- Adding 20 rows of placeholders -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/empty_txt_desc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/empty_txt"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="sans-serif"
-                android:paddingTop="4dp"
-                android:text="@string/no_internet_desc"
-                android:textAppearance="?android:textAppearanceSmall"
-                android:textColor="@android:color/darker_gray" />
+                    <include layout="@layout/shimmer_list_view_item" />
 
+                    <include layout="@layout/shimmer_list_view_item" />
 
-        </RelativeLayout>
+                    <include layout="@layout/shimmer_list_view_item" />
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="visible"
-            android:indeterminateTint="@color/colorSecondary" />
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                    <include layout="@layout/shimmer_list_view_item" />
+
+                </LinearLayout>
+
+            </ScrollView>
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

@@ -21,10 +21,18 @@ public class OverviewViewModel extends AndroidViewModel {
     private final EarthquakeRepository earthquakeRepository;
     SharedPreferences sharedPrefs;
     String orderFilter, limitFilter;
-    LiveData<List<OverviewUIState>> overviewUIStateList;
+    LiveData<List<OverviewUIState>> items;
+
+    private MutableLiveData<Boolean> _forceUpdate = new MutableLiveData<>(false);
 
     private MutableLiveData<String[]> _navigateToEarthquakeDetails = new MutableLiveData<>();
     LiveData<String[]> navigateToEarthquakeDetails = _navigateToEarthquakeDetails;
+
+    private MutableLiveData<Boolean> _snackBarEvent = new MutableLiveData<>(false);
+    LiveData<Boolean> snackBarEvent = _snackBarEvent;
+
+    private MutableLiveData<Boolean> _progressBarEvent = new MutableLiveData<>(false);
+    LiveData<Boolean> progressBarEvent = _progressBarEvent;
 
     public OverviewViewModel(@NonNull Application application) {
         super(application);
@@ -36,8 +44,7 @@ public class OverviewViewModel extends AndroidViewModel {
         limitFilter = sharedPrefs.getString(
                 application.getString(R.string.settings_limit_key),
                 application.getString(R.string.settings_limit_default));
-        refreshDataSource();
-        getOverViewUIStateList(false,orderFilter,limitFilter);
+        loadEarthquakes(true,orderFilter,limitFilter);
     }
 
     public void onEarthquakeClicked(String[] data){
@@ -48,12 +55,20 @@ public class OverviewViewModel extends AndroidViewModel {
         _navigateToEarthquakeDetails.setValue(null);
     }
 
-    public void refreshDataSource() {
-        earthquakeRepository.updateEarthquakeFromRemoteDataSource();
+    public void triggerSnackBar(){
+        _snackBarEvent.setValue(true);
     }
 
-    public void getOverViewUIStateList(boolean forceUpdate, String order, String limit){
-        overviewUIStateList = Transformations.map(earthquakeRepository.getEarthquakes(forceUpdate, order, limit), this::asOverViewUIStateList);
+    public void onSnackBarTriggered(){
+        _snackBarEvent.setValue(false);
+    }
+
+    public void triggerProgressBar(){
+        _progressBarEvent.setValue(true);
+    }
+
+    public void onProgressBarTriggered(){
+        _progressBarEvent.setValue(false);
     }
 
     private List<OverviewUIState> asOverViewUIStateList(List<Earthquake> earthquakeList){
@@ -62,6 +77,22 @@ public class OverviewViewModel extends AndroidViewModel {
             overviewUIStateList.add(new OverviewUIState(e.getEventId(), e.getMagnitude(), e.getPlace(), e.getTime()));
         }
         return overviewUIStateList;
+    }
+
+    public void loadEarthquakes(boolean forceUpdate, String order, String limit){
+        if(forceUpdate){
+            triggerProgressBar();
+            earthquakeRepository.refreshEarthquakes();
+        }
+        items = Transformations.map(earthquakeRepository.observeEarthquakes(order, limit), this::asOverViewUIStateList);
+    }
+
+//    public void loadEarthquakes(boolean forceUpdate){
+//        _forceUpdate.setValue(forceUpdate);
+//    }
+
+    public void refreshEarthquakes(){
+        earthquakeRepository.refreshEarthquakes();
     }
 
 }

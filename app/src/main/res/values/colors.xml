@@ -22,6 +22,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 
+    <color name="shimmer_background">#dddddd</color>
 
     <!-- Color for an earthquake with magnitude 0 and 2 -->
     <color name="magnitude1">#4A7BA7</color>

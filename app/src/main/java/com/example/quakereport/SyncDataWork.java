@@ -25,7 +25,7 @@ public class SyncDataWork extends Worker {
     public Result doWork() {
         EarthquakeRepository repository = new EarthquakeRepository((Application) getApplicationContext());
         try{
-            repository.updateEarthquakeFromRemoteDataSource();
+            repository.refreshEarthquakes();
             return Result.success();
         }catch (HttpException e){
             return Result.retry();

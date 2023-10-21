@@ -29,6 +29,16 @@ public class DetailsUIState {
         this.depth = depth;
     }
 
+    public DetailsUIState(double magnitude, String place, long time, String url, double longitude, double latitude, double depth) {
+        this.magnitude = magnitude;
+        this.place = place;
+        this.time = time;
+        this.url = url;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.depth = depth;
+    }
+
     public String getEventId() {
         return eventId;
     }
