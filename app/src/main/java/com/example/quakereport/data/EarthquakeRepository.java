@@ -17,6 +17,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.CompletableObserver;
 import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -31,22 +32,37 @@ public class EarthquakeRepository {
         earthquakeRemoteDataSource = new EarthquakeRemoteDataSource();
     }
 
-    public LiveData<List<Earthquake>> getEarthquakes(boolean forceUpdate, String order, String limit){
+    public Single<List<Earthquake>> getEarthquakes(boolean forceUpdate, String order, String limit){
+        if(forceUpdate){
+            updateEarthquakesFromRemoteDataSource();
+        }
+        return earthquakeLocalDataSource.getEarthquakes(order, limit);
+    }
+
+    public Single<Earthquake> getEarthquake(boolean forceUpdate, String eventId){
         if(forceUpdate){
             updateEarthquakeFromRemoteDataSource();
         }
+        return earthquakeLocalDataSource.getEarthquake(eventId);
+    }
+
+    public LiveData<List<Earthquake>> observeEarthquakes(String order, String limit){
         return earthquakeLocalDataSource.observeEarthquakes(order, limit);
     }
 
-    public LiveData<Earthquake> getEarthquake(String eventId){
+    public LiveData<Earthquake> observeEarthquake(String eventId){
         return earthquakeLocalDataSource.observeEarthquake(eventId);
+    }
+
+    public void refreshEarthquakes(){
+        updateEarthquakesFromRemoteDataSource();
     }
 
     public void refreshEarthquake(){
         updateEarthquakeFromRemoteDataSource();
     }
 
-    private void updateEarthquakeFromRemoteDataSource(){
+    private void updateEarthquakesFromRemoteDataSource(){
         earthquakeRemoteDataSource.getEarthquakes()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -74,11 +90,8 @@ public class EarthquakeRepository {
         });
     }
 
-    private void saveEarthquake(EarthquakeProperty earthquakeProperty){
-        earthquakeLocalDataSource.saveEarthquakes(earthquakeProperty)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+    private void updateEarthquakeFromRemoteDataSource(){
+        // no implementation yet
     }
 
     private void syncEarthquakes(EarthquakeProperty earthquakeProperty){
@@ -102,6 +115,13 @@ public class EarthquakeRepository {
 
                     }
                 });
+    }
+
+    private void saveEarthquake(EarthquakeProperty earthquakeProperty){
+        earthquakeLocalDataSource.saveEarthquakes(earthquakeProperty)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe();
     }
 
 }

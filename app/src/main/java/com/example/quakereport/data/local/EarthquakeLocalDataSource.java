@@ -12,6 +12,7 @@ import java.util.List;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 
 
 public class EarthquakeLocalDataSource implements EarthquakeDataSource {
@@ -32,11 +33,23 @@ public class EarthquakeLocalDataSource implements EarthquakeDataSource {
     public LiveData<List<Earthquake>> observeEarthquakes(String order, String limit) {
         String statement = "SELECT * FROM earthquake ORDER BY " + order + " LIMIT " + limit;
         SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
-        return earthquakeDao.getEarthquakes(query);
+        return earthquakeDao.observeEarthquakes(query);
     }
 
     @Override
     public LiveData<Earthquake> observeEarthquake(String eventId) {
+        return earthquakeDao.observeEarthquake(eventId);
+    }
+
+    @Override
+    public Single<List<Earthquake>> getEarthquakes(String order, String limit) {
+        String statement = "SELECT * FROM earthquake ORDER BY " + order + " LIMIT " + limit;
+        SupportSQLiteQuery query = new SimpleSQLiteQuery(statement, new Object[]{});
+        return earthquakeDao.getEarthquakes(query);
+    }
+
+    @Override
+    public Single<Earthquake> getEarthquake(String eventId) {
         return earthquakeDao.getEarthquake(eventId);
     }
 

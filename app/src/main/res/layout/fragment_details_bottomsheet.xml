@@ -2,7 +2,6 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.overview.OverviewFragment">
 
     <data>
@@ -26,6 +25,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/snackbar_coordinate"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -355,8 +355,6 @@
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
-
-<!--            </com.google.android.material.card.MaterialCardView>-->
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

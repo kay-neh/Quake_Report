@@ -21,7 +21,9 @@ public class OverviewViewModel extends AndroidViewModel {
     private final EarthquakeRepository earthquakeRepository;
     SharedPreferences sharedPrefs;
     String orderFilter, limitFilter;
-    LiveData<List<OverviewUIState>> overviewUIStateList;
+    LiveData<List<OverviewUIState>> items;
+
+    private MutableLiveData<Boolean> _forceUpdate = new MutableLiveData<>(false);
 
     private MutableLiveData<String[]> _navigateToEarthquakeDetails = new MutableLiveData<>();
     LiveData<String[]> navigateToEarthquakeDetails = _navigateToEarthquakeDetails;
@@ -42,9 +44,7 @@ public class OverviewViewModel extends AndroidViewModel {
         limitFilter = sharedPrefs.getString(
                 application.getString(R.string.settings_limit_key),
                 application.getString(R.string.settings_limit_default));
-        triggerProgressBar();
-        refreshDataSource();
-        getOverViewUIStateList(false,orderFilter,limitFilter);
+        loadEarthquakes(true,orderFilter,limitFilter);
     }
 
     public void onEarthquakeClicked(String[] data){
@@ -71,20 +71,28 @@ public class OverviewViewModel extends AndroidViewModel {
         _progressBarEvent.setValue(false);
     }
 
-    public void refreshDataSource() {
-        earthquakeRepository.refreshEarthquake();
-    }
-
-    public void getOverViewUIStateList(boolean forceUpdate, String order, String limit){
-        overviewUIStateList = Transformations.map(earthquakeRepository.getEarthquakes(forceUpdate, order, limit), this::asOverViewUIStateList);
-    }
-
     private List<OverviewUIState> asOverViewUIStateList(List<Earthquake> earthquakeList){
         List<OverviewUIState> overviewUIStateList = new ArrayList<>();
         for(Earthquake e: earthquakeList){
             overviewUIStateList.add(new OverviewUIState(e.getEventId(), e.getMagnitude(), e.getPlace(), e.getTime()));
         }
         return overviewUIStateList;
+    }
+
+    public void loadEarthquakes(boolean forceUpdate, String order, String limit){
+        if(forceUpdate){
+            triggerProgressBar();
+            earthquakeRepository.refreshEarthquakes();
+        }
+        items = Transformations.map(earthquakeRepository.observeEarthquakes(order, limit), this::asOverViewUIStateList);
+    }
+
+//    public void loadEarthquakes(boolean forceUpdate){
+//        _forceUpdate.setValue(forceUpdate);
+//    }
+
+    public void refreshEarthquakes(){
+        earthquakeRepository.refreshEarthquakes();
     }
 
 }

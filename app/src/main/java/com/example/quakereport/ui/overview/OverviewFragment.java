@@ -75,12 +75,13 @@ public class OverviewFragment extends Fragment {
         //Init sharedPreference, get list and register listener
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        overviewViewModel.overviewUIStateList.observe(getViewLifecycleOwner(), overviewUIStateList -> {
+        overviewViewModel.items.observe(getViewLifecycleOwner(), overviewUIStateList -> {
             if (overviewUIStateList != null) {
                 Log.e("StateList size", String.valueOf(overviewUIStateList.size()));
                 adapter.submitList(overviewUIStateList);
                 if (!overviewUIStateList.isEmpty()) {
                     overviewViewModel.onProgressBarTriggered();
+                    binding.swipeDown.setRefreshing(false);
                 }
             }
         });
@@ -117,14 +118,14 @@ public class OverviewFragment extends Fragment {
 
         onSharedPreferenceChangeListener = (sharedPreferences, key) -> {
             if (key.equals(getContext().getString(R.string.settings_order_by_key))) {
-                overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
+                overviewViewModel.loadEarthquakes(false, sharedPreferences.getString(key, getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(
                                 getContext().getString(R.string.settings_limit_key),
                                 getContext().getString(R.string.settings_limit_default)));
             }
             if (key.equals(getContext().getString(R.string.settings_limit_key))) {
-                overviewViewModel.getOverViewUIStateList(false, sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
+                overviewViewModel.loadEarthquakes(false, sharedPreferences.getString(getContext().getString(R.string.settings_order_by_key),
                                 getContext().getString(R.string.settings_order_by_default))
                         ,
                         sharedPreferences.getString(key, getContext().getString(R.string.settings_limit_default)));
@@ -148,9 +149,7 @@ public class OverviewFragment extends Fragment {
 
     public void swipeDownAction() {
         binding.swipeDown.setOnRefreshListener(() -> {
-            overviewViewModel.refreshDataSource();
-            binding.swipeDown.setRefreshing(false);
-            overviewViewModel.triggerSnackBar();
+            overviewViewModel.refreshEarthquakes();
         });
     }
 

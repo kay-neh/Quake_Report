@@ -9,6 +9,7 @@ import java.util.List;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 
 public class EarthquakeRemoteDataSource implements EarthquakeDataSource {
 
@@ -26,6 +27,18 @@ public class EarthquakeRemoteDataSource implements EarthquakeDataSource {
 
     @Override
     public LiveData<Earthquake> observeEarthquake(String eventId) {
+        // Not required for remote datasource
+        return null;
+    }
+
+    @Override
+    public Single<List<Earthquake>> getEarthquakes(String order, String limit) {
+        // Not required for remote datasource
+        return null;
+    }
+
+    @Override
+    public Single<Earthquake> getEarthquake(String eventId) {
         // Not required for remote datasource
         return null;
     }

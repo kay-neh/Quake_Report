@@ -9,6 +9,7 @@ import java.util.List;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 
 public interface EarthquakeDataSource {
 
@@ -17,6 +18,10 @@ public interface EarthquakeDataSource {
     public LiveData<List<Earthquake>> observeEarthquakes(String order, String limit);
 
     public LiveData<Earthquake> observeEarthquake(String eventId);
+
+    public Single<List<Earthquake>> getEarthquakes(String order, String limit);
+
+    public Single<Earthquake> getEarthquake(String eventId);
 
     public Completable saveEarthquakes(EarthquakeProperty earthquakeProperty);
 

@@ -24,11 +24,11 @@ public class DetailsViewModel extends AndroidViewModel {
     }
 
     private void getDetailsUIState(String eventId){
-        detailsUIState = Transformations.map(earthquakeRepository.getEarthquake(eventId), this::asDetailsUIState);
+        detailsUIState = Transformations.map(earthquakeRepository.observeEarthquake(eventId), this::asDetailsUIState);
     }
 
     private DetailsUIState asDetailsUIState(Earthquake earthquake){
-        return new DetailsUIState(earthquake.getEventId(), earthquake.getMagnitude(), earthquake.getPlace(), earthquake.getTime(), earthquake.getUrl(), earthquake.getLongitude(), earthquake.getLatitude(), earthquake.getDepth());
+        return new DetailsUIState(earthquake.getMagnitude(), earthquake.getPlace(), earthquake.getTime(), earthquake.getUrl(), earthquake.getLongitude(), earthquake.getLatitude(), earthquake.getDepth());
     }
 
 }
