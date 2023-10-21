@@ -26,8 +26,26 @@ It leverages the following components from the Jetpack library:
 
 ## Screenshots
 
-![Screenshot 1](screenshots/screen_1.png)
-
+![Screenshot 1](Screenshots/1.jpg)
+![screenshot 2](Screenshots/2.jpg)
+![screenshot 3](Screenshots/3.jpg)
+![screenshot 4](Screenshots/4.jpg)
+![screenshot 5](Screenshots/5.jpg)
+![screenshot 6](Screenshots/6.jpg)
+![screenshot 7](Screenshots/7.jpg)
+![screenshot 8](Screenshots/8.jpg)
+![screenshot 9](Screenshots/9.jpg)
+![Screenshot 10](Screenshots/10.jpg)
+![Screenshot 11](Screenshots/11.jpg)
+![screenshot 12](Screenshots/12.jpg)
+![screenshot 13](Screenshots/13.jpg)
+![screenshot 14](Screenshots/14.jpg)
+![screenshot 15](Screenshots/15.jpg)
+![screenshot 16](Screenshots/16.jpg)
+![screenshot 17](Screenshots/17.jpg)
+![screenshot 18](Screenshots/18.jpg)
+![screenshot 19](Screenshots/19.jpg)
+![Screenshot 20](Screenshots/20.jpg)
 
 ## Requirements
 * Android SDK v23 or higher
